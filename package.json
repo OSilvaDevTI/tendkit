@@ -1,0 +1,21 @@
+{
+  "name": "tendkit",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "registry:build": "shadcn build"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.15",
+    "@types/node": "^22.19.11",
+    "drizzle-kit": "^0.31.9",
+    "drizzle-orm": "^0.45.4",
+    "postal-mime": "^4.2.0",
+    "typescript": "^5.9.2",
+    "vitest": "^5.1.0"
+  },
+  "packageManager": "pnpm@10.0.0"
+}
