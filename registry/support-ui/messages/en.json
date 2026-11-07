@@ -1,0 +1,125 @@
+{
+  "status": {
+    "open": "Open",
+    "waiting": "Waiting on customer",
+    "solved": "Solved",
+    "spam": "Spam"
+  },
+  "inbox": {
+    "search": "Search tickets",
+    "assignee": "Assignee",
+    "anyone": "Anyone",
+    "me": "Assigned to me",
+    "unassigned": "Unassigned",
+    "columns": {
+      "customer": "Customer",
+      "subject": "Subject",
+      "assignee": "Assignee",
+      "waiting": "Waiting",
+      "solved": "Solved",
+      "updated": "Updated"
+    },
+    "empty": {
+      "open": "Nothing needs an answer.",
+      "waiting": "No tickets are waiting on a customer.",
+      "solved": "No solved tickets yet.",
+      "spam": "No spam.",
+      "search": "No tickets match your search."
+    },
+    "range": "{from}–{to} of {total}",
+    "you": "You",
+    "unread": "New activity",
+    "noSubject": "(no subject)",
+    "unknownSender": "Unknown sender"
+  },
+  "ticket": {
+    "back": "Support",
+    "spamNotice": "Marked as spam. New messages from this sender are ignored.",
+    "statusLabel": "Status:",
+    "assigneeLabel": "Assignee:",
+    "assignToMe": "Me",
+    "more": "More actions",
+    "linkCustomer": "Link to a customer",
+    "changeCustomer": "Change customer",
+    "markSpam": "Mark as spam",
+    "notSpam": "Not spam",
+    "formerAgent": "Former teammate",
+    "note": "Internal note",
+    "viaPortal": "from the app",
+    "autoReplySent": "Automatic reply sent",
+    "showOriginal": "Show full message",
+    "showReply": "Show reply only",
+    "showImages": "Show images",
+    "notDelivered": "Not delivered.",
+    "contact": "Contact",
+    "unknownSenderHelp": "This email doesn't match an account. Link it once and their next messages link automatically.",
+    "previous": "Previous tickets",
+    "events": {
+      "system": "Support",
+      "took": "{actor} took this ticket",
+      "assigned": "{actor} assigned this to {assignee}",
+      "unassigned": "{actor} unassigned this ticket",
+      "status": "{actor} set the status to {status}",
+      "linked": "{actor} linked a customer",
+      "unlinked": "{actor} unlinked the customer",
+      "reopened": "Reopened by the customer's reply",
+      "followUp": "Follow-up to ticket #{number}"
+    }
+  },
+  "composer": {
+    "reply": "Reply",
+    "note": "Internal note",
+    "to": "To",
+    "replyPlaceholder": "Write a reply…",
+    "notePlaceholder": "Only your team sees notes.",
+    "attach": "Attach",
+    "removeFile": "Remove {name}",
+    "send": "Send",
+    "sendAndSolve": "Send and mark solved",
+    "addNote": "Add note",
+    "blocked": {
+      "reply_window_closed": "You can only reply within 24 hours of the customer's last message on this channel. Leave a note, or wait for them to write again.",
+      "no_channel": "This ticket's channel is no longer set up, so replies can't be sent.",
+      "no_recipient": "There's no address to reply to on this channel."
+    }
+  },
+  "link": {
+    "title": "Link to a customer",
+    "description": "Choose the customer {name} belongs to.",
+    "search": "Search customers",
+    "hint": "Type at least two characters.",
+    "none": "No customers found.",
+    "unlink": "Unlink from {name}"
+  },
+  "portal": {
+    "newRequest": "New request",
+    "emptyTitle": "No requests yet",
+    "emptyBody": "Questions about your account? Send us a request and we'll reply by email.",
+    "status": {
+      "open": "Open",
+      "awaitingYou": "Awaiting your reply",
+      "solved": "Solved"
+    },
+    "newReply": "New reply",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send",
+    "back": "All requests",
+    "notFound": "This request doesn't exist or you don't have access to it.",
+    "you": "You",
+    "team": "Support",
+    "replyPlaceholder": "Write a reply…",
+    "emailNote": "We'll also email you when we reply."
+  },
+  "errors": {
+    "load": "Couldn't load this. Check your connection and try again.",
+    "send": "Couldn't send. Try again.",
+    "upload": "Couldn't upload this file."
+  },
+  "actions": {
+    "retry": "Try again",
+    "previous": "Previous page",
+    "next": "Next page",
+    "cancel": "Cancel"
+  }
+}

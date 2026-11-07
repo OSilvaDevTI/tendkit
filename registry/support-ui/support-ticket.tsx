@@ -1,0 +1,356 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, ArrowLeft, Ban, Link2, MoreHorizontal, RotateCw } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { buttonVariants } from "@/components/ui/button";
+import { useSupport } from "./provider";
+import type { Agent, TicketDetail, TicketStatus, TimelineEvent, TimelineMessage } from "./client";
+import { contactLabel, formatTimestamp, formatWhen } from "./format";
+import { AgentAvatar, AttachmentChip, EmailFrame, MessageText, StatusBadge, UnknownSenderBadge } from "./parts";
+import { SupportComposer } from "./support-composer";
+import { LinkCustomerDialog } from "./link-customer-dialog";
+
+/** One ticket: the conversation, the reply box, and the customer next to it. */
+export function SupportTicket({ ticketId }: { ticketId: string }) {
+  const { client, t, inboxHref } = useSupport();
+  const ticket = useQuery({
+    queryKey: ["support", "ticket", ticketId],
+    queryFn: () => client.getTicket(ticketId),
+    refetchInterval: 15_000,
+  });
+  const agents = useQuery({ queryKey: ["support", "agents"], queryFn: () => client.listAgents(), staleTime: 5 * 60_000 });
+
+  if (ticket.error) {
+    return (
+      <div className="rounded-xl border bg-card px-4 py-12 text-center">
+        <p className="text-sm text-destructive">{t("errors.load")}</p>
+        <Button variant="outline" size="sm" className="mt-3" onClick={() => ticket.refetch()}>
+          {t("actions.retry")}
+        </Button>
+      </div>
+    );
+  }
+  if (!ticket.data) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-80" />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    );
+  }
+
+  const detail = ticket.data;
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <Link href={inboxHref} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="size-4 rtl:rotate-180" />
+            {t("ticket.back")}
+          </Link>
+          <h1 dir="auto" className="mt-1 text-2xl font-semibold tracking-tight break-words">
+            {detail.ticket.subject || t("inbox.noSubject")}
+          </h1>
+        </div>
+        <TicketControls detail={detail} agents={agents.data ?? []} />
+      </div>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="space-y-3">
+          <Timeline detail={detail} agents={agents.data ?? []} />
+          {detail.ticket.status === "spam" ? (
+            <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">{t("ticket.spamNotice")}</p>
+          ) : (
+            <SupportComposer detail={detail} />
+          )}
+        </div>
+        <CustomerSidebar detail={detail} />
+      </div>
+    </div>
+  );
+}
+
+function useTicketMutation<T>(ticketId: string, fn: (input: T) => Promise<unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["support", "ticket", ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["support", "tickets"] });
+      queryClient.invalidateQueries({ queryKey: ["support", "counts"] });
+    },
+  });
+}
+
+function TicketControls({ detail, agents }: { detail: TicketDetail; agents: Agent[] }) {
+  const { client, t, viewerId } = useSupport();
+  const id = detail.ticket.id;
+  const setStatus = useTicketMutation(id, (status: TicketStatus) => client.setStatus({ ticketId: id, status }));
+  const assign = useTicketMutation(id, (assigneeId: string | null) => client.assign({ ticketId: id, assigneeId }));
+  const [linking, setLinking] = useState(false);
+  const assigneeName = detail.assignee ? (detail.assignee.id === viewerId ? t("inbox.you") : detail.assignee.name) : t("inbox.unassigned");
+  const trigger = buttonVariants({ variant: "outline", size: "sm" });
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {detail.ticket.status !== "spam" && (
+        <DropdownMenu>
+          <DropdownMenuTrigger className={trigger} disabled={setStatus.isPending}>
+            <span className="text-muted-foreground">{t("ticket.statusLabel")}</span>
+            <span>{t(`status.${detail.ticket.status}`)}</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuRadioGroup value={detail.ticket.status} onValueChange={(v) => setStatus.mutate(v as TicketStatus)}>
+              {(["open", "waiting", "solved"] as const).map((status) => (
+                <DropdownMenuRadioItem key={status} value={status}>
+                  {t(`status.${status}`)}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+
+      <DropdownMenu>
+        <DropdownMenuTrigger className={trigger} disabled={assign.isPending}>
+          <span className="text-muted-foreground">{t("ticket.assigneeLabel")}</span>
+          <span>{assigneeName}</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+          <DropdownMenuRadioGroup value={detail.ticket.assigneeId ?? ""} onValueChange={(v) => assign.mutate(v || null)}>
+            <DropdownMenuRadioItem value={viewerId}>{t("ticket.assignToMe")}</DropdownMenuRadioItem>
+            {agents
+              .filter((a) => a.id !== viewerId)
+              .map((agent) => (
+                <DropdownMenuRadioItem key={agent.id} value={agent.id}>
+                  {agent.name}
+                </DropdownMenuRadioItem>
+              ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioItem value="">{t("inbox.unassigned")}</DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger className={buttonVariants({ variant: "outline", size: "icon" }) + " size-8"} aria-label={t("ticket.more")}>
+          <MoreHorizontal className="size-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => setLinking(true)}>
+            <Link2 className="size-4" />
+            {detail.customer ? t("ticket.changeCustomer") : t("ticket.linkCustomer")}
+          </DropdownMenuItem>
+          {detail.ticket.status === "spam" ? (
+            <DropdownMenuItem onSelect={() => setStatus.mutate("open")}>
+              <RotateCw className="size-4" />
+              {t("ticket.notSpam")}
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem variant="destructive" onSelect={() => setStatus.mutate("spam")}>
+              <Ban className="size-4" />
+              {t("ticket.markSpam")}
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <LinkCustomerDialog detail={detail} open={linking} onOpenChange={setLinking} />
+    </div>
+  );
+}
+
+function Timeline({ detail, agents }: { detail: TicketDetail; agents: Agent[] }) {
+  const { t, locale, viewerId } = useSupport();
+  const agentName = (id: string | null) =>
+    !id ? null : id === viewerId ? t("inbox.you") : agents.find((a) => a.id === id)?.name ?? t("ticket.formerAgent");
+
+  return (
+    <ol className="space-y-3">
+      {detail.timeline.map((entry) =>
+        entry.type === "message" ? (
+          <li key={entry.message.id}>
+            <MessageCard message={entry.message} detail={detail} agentName={agentName} />
+          </li>
+        ) : (
+          <li key={entry.event.id} className="px-2 py-1 text-center text-xs text-muted-foreground">
+            {describeEvent(entry.event, t, agentName)} · {formatWhen(entry.event.createdAt, locale)}
+          </li>
+        )
+      )}
+    </ol>
+  );
+}
+
+function describeEvent(event: TimelineEvent, t: ReturnType<typeof useSupport>["t"], agentName: (id: string | null) => string | null) {
+  const actor = agentName(event.actorId) ?? t("ticket.events.system");
+  switch (event.type) {
+    case "assigned": {
+      const to = event.data.to as string | null;
+      if (!to) return t("ticket.events.unassigned", { actor });
+      if (to === event.actorId) return t("ticket.events.took", { actor });
+      return t("ticket.events.assigned", { actor, assignee: agentName(to) ?? "" });
+    }
+    case "status_changed":
+      return t("ticket.events.status", { actor, status: t(`status.${event.data.to as TicketStatus}`) });
+    case "customer_linked":
+      return event.data.to ? t("ticket.events.linked", { actor }) : t("ticket.events.unlinked", { actor });
+    case "reopened":
+      return t("ticket.events.reopened");
+    case "follow_up":
+      return t("ticket.events.followUp", { number: String(event.data.number) });
+    default:
+      return event.type;
+  }
+}
+
+function MessageCard({
+  message,
+  detail,
+  agentName,
+}: {
+  message: TimelineMessage;
+  detail: TicketDetail;
+  agentName: (id: string | null) => string | null;
+}) {
+  const { client, t, locale } = useSupport();
+  const [original, setOriginal] = useState(false);
+  const retry = useTicketMutation(detail.ticket.id, () => client.retry({ messageId: message.id }));
+
+  if (message.auto && message.kind === "outbound") {
+    return <p className="px-2 py-1 text-center text-xs text-muted-foreground">{t("ticket.autoReplySent")} · {formatWhen(message.createdAt, locale)}</p>;
+  }
+
+  const author =
+    message.kind === "inbound"
+      ? message.from?.name || message.from?.address || contactLabel(detail.contact)
+      : agentName(message.authorId) ?? message.from?.name ?? t("ticket.formerAgent");
+  const hasMore = message.kind === "inbound" && (message.html || (message.fullText && message.fullText.trim() !== message.text.trim()));
+  const failed = message.deliveryStatus === "failed";
+
+  return (
+    <article
+      className={cn(
+        "rounded-xl border p-4",
+        message.kind === "note" && "border-amber-300/60 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10",
+        message.kind === "outbound" && "border-primary/20 bg-primary/[0.03]",
+        message.kind === "inbound" && "bg-card",
+        failed && "border-destructive/40"
+      )}
+    >
+      <header className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <AgentAvatar name={author} className={message.kind === "inbound" ? "bg-muted text-foreground/70" : undefined} />
+        <bdi className="text-sm font-medium text-foreground">{author}</bdi>
+        {message.kind === "note" && <span className="font-medium text-amber-700 dark:text-amber-300">{t("ticket.note")}</span>}
+        {message.kind === "inbound" && message.from && message.from.name && <bdi dir="ltr">{message.from.address}</bdi>}
+        {message.source === "portal" && <span>{t("ticket.viaPortal")}</span>}
+        <time className="ms-auto tabular-nums" dateTime={new Date(message.createdAt).toISOString()}>
+          {formatTimestamp(message.createdAt, locale)}
+        </time>
+      </header>
+
+      {original && message.html ? (
+        <EmailFrame html={message.html} showImagesLabel={t("ticket.showImages")} />
+      ) : (
+        <MessageText text={original && message.fullText ? message.fullText : message.text} />
+      )}
+
+      {message.attachments.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {message.attachments.map((file) => (
+            <AttachmentChip key={file.id} file={file} locale={locale} getUrl={() => client.attachmentUrl({ id: file.id })} />
+          ))}
+        </div>
+      )}
+
+      {(hasMore || failed) && (
+        <footer className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+          {hasMore && (
+            <button type="button" className="text-muted-foreground underline underline-offset-2 hover:text-foreground" onClick={() => setOriginal((v) => !v)}>
+              {original ? t("ticket.showReply") : t("ticket.showOriginal")}
+            </button>
+          )}
+          {failed && (
+            <span className="inline-flex flex-wrap items-center gap-2 text-destructive">
+              <AlertCircle className="size-3.5" />
+              {t("ticket.notDelivered")}
+              {message.deliveryError && <span className="text-muted-foreground">{message.deliveryError}</span>}
+              <Button variant="outline" size="sm" className="h-7" disabled={retry.isPending} onClick={() => retry.mutate(undefined)}>
+                {t("actions.retry")}
+              </Button>
+            </span>
+          )}
+        </footer>
+      )}
+    </article>
+  );
+}
+
+function CustomerSidebar({ detail }: { detail: TicketDetail }) {
+  const { t, locale, customerPanel, ticketHref } = useSupport();
+  const [linking, setLinking] = useState(false);
+
+  return (
+    <aside className="space-y-4 lg:sticky lg:top-6">
+      {customerPanel?.(detail)}
+      <section className="rounded-xl border bg-card p-4">
+        <h2 className="text-xs font-medium text-muted-foreground">{t("ticket.contact")}</h2>
+        <p className="mt-2 text-sm font-medium">
+          <bdi>{contactLabel(detail.contact)}</bdi>
+        </p>
+        <ul className="mt-1 space-y-0.5 text-sm text-muted-foreground">
+          {detail.contact.identities.map((identity) => (
+            <li key={`${identity.kind}:${identity.value}`} dir="ltr" lang="en" className="truncate text-start">
+              {identity.value}
+            </li>
+          ))}
+        </ul>
+        {!detail.customer && (
+          <div className="mt-3 space-y-2">
+            <UnknownSenderBadge />
+            <p className="text-sm text-muted-foreground">{t("ticket.unknownSenderHelp")}</p>
+            <Button variant="outline" size="sm" onClick={() => setLinking(true)}>
+              {t("ticket.linkCustomer")}
+            </Button>
+            <LinkCustomerDialog detail={detail} open={linking} onOpenChange={setLinking} />
+          </div>
+        )}
+      </section>
+
+      {detail.previousTickets.length > 0 && (
+        <section className="rounded-xl border bg-card p-4">
+          <h2 className="text-xs font-medium text-muted-foreground">{t("ticket.previous")}</h2>
+          <ul className="mt-2 space-y-2">
+            {detail.previousTickets.map((previous) => (
+              <li key={previous.id}>
+                <Link href={ticketHref(previous.id)} className="flex items-center justify-between gap-2 text-sm hover:underline">
+                  <span dir="auto" className="truncate">
+                    {previous.subject || t("inbox.noSubject")}
+                  </span>
+                  <StatusBadge status={previous.status} label={t(`status.${previous.status}`)} />
+                </Link>
+                <p className="text-xs text-muted-foreground">{formatWhen(previous.lastMessageAt, locale)}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </aside>
+  );
+}

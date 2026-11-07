@@ -9,7 +9,10 @@ export function normalizeIdentity(kind: IdentityKind, value: string): Identity {
   const trimmed = value.trim();
   if (kind === "email") return { kind, value: trimmed.toLowerCase() };
   if (kind === "phone" || kind === "whatsapp") {
-    const digits = trimmed.replace(/^whatsapp:/i, "").replace(/[^\d+]/g, "");
+    const raw = trimmed.replace(/^whatsapp:/i, "");
+    // WhatsApp users who hide their number arrive with a business-scoped id ("US.1349…"): keep it as is.
+    if (/[a-z]/i.test(raw)) return { kind, value: raw };
+    const digits = raw.replace(/[^\d+]/g, "");
     return { kind, value: digits.startsWith("+") ? digits : digits ? `+${digits}` : trimmed };
   }
   return { kind, value: trimmed };
