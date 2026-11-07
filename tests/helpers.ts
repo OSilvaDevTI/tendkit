@@ -7,13 +7,19 @@ import type { Channel, ChannelCapabilities, InboundMessage, OutboundMessage, Sen
 
 const migrationsDir = new URL("../registry/support/postgres/migrations/", import.meta.url);
 
+let template: Promise<PGlite> | undefined;
+
+/** A migrated database. Migrations run once per test file; each test gets a fresh clone. */
 export async function createTestDb() {
-  const client = new PGlite();
-  for (const file of readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort()) {
-    const sql = readFileSync(new URL(file, migrationsDir), "utf8");
-    for (const statement of sql.split("--> statement-breakpoint")) await client.exec(statement);
-  }
-  return drizzle(client);
+  template ??= (async () => {
+    const client = new PGlite();
+    for (const file of readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort()) {
+      const sql = readFileSync(new URL(file, migrationsDir), "utf8");
+      for (const statement of sql.split("--> statement-breakpoint")) await client.exec(statement);
+    }
+    return client;
+  })();
+  return drizzle((await (await template).clone()) as PGlite);
 }
 
 export const emailCapabilities: ChannelCapabilities = {
@@ -127,7 +133,7 @@ export async function setup(options: Partial<SupportOptions> = {}, channels?: Ch
 }
 
 let seq = 0;
-export function inbound(partial: Partial<InboundMessage> & { from?: string } = {}): InboundMessage {
+export function inbound(partial: Partial<Omit<InboundMessage, "from">> & { from?: string } = {}): InboundMessage {
   seq++;
   const { from, ...rest } = partial;
   return {
