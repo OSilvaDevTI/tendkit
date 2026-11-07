@@ -228,6 +228,7 @@ function statusEvent(event: ResendEvent): ChannelEvent | null {
     providerMessageId: data.email_id,
     status: mapped.status,
     error: mapped.error ?? null,
+    rfcMessageId: data.message_id ?? null,
     at: parseDate(event.created_at ?? data.created_at),
   };
 }
@@ -382,6 +383,7 @@ type ReceivedEmail = {
 
 type StatusEventData = {
   email_id?: string;
+  message_id?: string | null;
   created_at?: string;
   bounce?: { type?: string; subType?: string; message?: string };
   failed?: { reason?: string };

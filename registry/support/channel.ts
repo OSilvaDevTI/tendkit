@@ -64,6 +64,8 @@ export type ChannelEvent =
       providerMessageId: string;
       status: DeliveryStatus;
       error?: string | null;
+      /** The RFC Message-ID the provider assigned, when it reports it with the status. */
+      rfcMessageId?: string | null;
       at: Date;
     };
 

@@ -230,6 +230,10 @@ export function createSupport(options: SupportOptions) {
   async function applyStatus(ch: Channel, event: Extract<ChannelEvent, { type: "status" }>) {
     const message = await store.findMessageByProviderId(ch.id, event.providerMessageId);
     if (!message) return { result: "ignored" as const };
+    // Learning our Message-ID late still lets customers' replies thread on In-Reply-To.
+    if (event.rfcMessageId && !message.rfcMessageId) {
+      await store.updateMessage(message.id, { rfcMessageId: event.rfcMessageId });
+    }
     const current = message.deliveryStatus ?? "queued";
     if (event.status !== "failed" && DELIVERY_ORDER[event.status] <= DELIVERY_ORDER[current]) {
       return { result: "ignored" as const };
