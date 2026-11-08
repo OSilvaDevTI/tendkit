@@ -19,7 +19,7 @@ export type TwilioChannelOptions = {
   /** Optional API key ("SK…") for REST calls; recommended over the Auth Token. */
   apiKeySid?: string;
   apiKeySecret?: string;
-  /** The number customers write to: "+22220000000", or "whatsapp:+22220000000" for WhatsApp. */
+  /** The number customers write to: "+14155550100", or "whatsapp:+14155550100" for WhatsApp. */
   from: string;
   /** Send through a Messaging Service ("MG…") instead of `from`. `from` still sets the channel's kind and address. */
   messagingServiceSid?: string;
@@ -52,9 +52,9 @@ export type TwilioChannelOptions = {
  *   Arabic and other non-GSM text uses 70-character segments. No reply window.
  * - WhatsApp: 24-hour customer service window; outside it Twilio only sends approved templates
  *   (error 63016), which this adapter doesn't send.
- * - Two-way SMS isn't available everywhere. In Mauritania (+222), for example, Twilio's country
- *   guidelines list two-way SMS as not supported, so customers there can't text a Twilio number.
- *   Check https://www.twilio.com/en-us/guidelines/<country-code>/sms before relying on SMS replies.
+ * - Two-way SMS isn't available in every country, so customers in some countries can't text a
+ *   Twilio number. Check https://www.twilio.com/en-us/guidelines/<country-code>/sms before relying
+ *   on SMS replies.
  */
 export function twilioChannel(options: TwilioChannelOptions): Channel {
   const doFetch = options.fetch ?? fetch;

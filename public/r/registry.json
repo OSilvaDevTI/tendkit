@@ -45,12 +45,12 @@
       "name": "support-postgres",
       "type": "registry:item",
       "title": "Postgres store",
-      "description": "Drizzle schema, a starting migration and the store for Postgres (Supabase, Neon, RDS, PGlite\u2026).",
+      "description": "Drizzle schema, a starting migration and the store for Postgres (Supabase, Neon, RDS, PGlite…).",
       "dependencies": [
         "drizzle-orm@^0.45"
       ],
       "registryDependencies": [
-        "@tendkit/support"
+        "https://tendkit.softwaresavants.dev/r/support.json"
       ],
       "files": [
         {
@@ -79,7 +79,7 @@
         "drizzle-orm@^0.45"
       ],
       "registryDependencies": [
-        "@tendkit/support"
+        "https://tendkit.softwaresavants.dev/r/support.json"
       ],
       "files": [
         {
@@ -105,7 +105,7 @@
       "title": "Channel helpers",
       "description": "WebCrypto signature checks shared by channel adapters.",
       "registryDependencies": [
-        "@tendkit/support"
+        "https://tendkit.softwaresavants.dev/r/support.json"
       ],
       "files": [
         {
@@ -124,7 +124,7 @@
         "postal-mime@^4.2"
       ],
       "registryDependencies": [
-        "@tendkit/channel-utils"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json"
       ],
       "files": [
         {
@@ -140,7 +140,7 @@
       "title": "Resend channel",
       "description": "Email in and out through Resend: inbound webhooks, replies, delivery events.",
       "registryDependencies": [
-        "@tendkit/channel-utils"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json"
       ],
       "files": [
         {
@@ -156,7 +156,7 @@
       "title": "Microsoft 365 channel",
       "description": "A Microsoft 365 or Exchange Online mailbox through Microsoft Graph.",
       "registryDependencies": [
-        "@tendkit/channel-utils"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json"
       ],
       "files": [
         {
@@ -172,8 +172,8 @@
       "title": "Gmail channel",
       "description": "A Gmail or Google Workspace mailbox through the Gmail API.",
       "registryDependencies": [
-        "@tendkit/channel-utils",
-        "@tendkit/channel-mime"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json",
+        "https://tendkit.softwaresavants.dev/r/channel-mime.json"
       ],
       "files": [
         {
@@ -189,8 +189,8 @@
       "title": "SMTP and IMAP channel",
       "description": "Any mailbox over SMTP and IMAP, with transports you provide.",
       "registryDependencies": [
-        "@tendkit/channel-utils",
-        "@tendkit/channel-mime"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json",
+        "https://tendkit.softwaresavants.dev/r/channel-mime.json"
       ],
       "files": [
         {
@@ -206,7 +206,7 @@
       "title": "Twilio channel",
       "description": "SMS and WhatsApp through Twilio Programmable Messaging.",
       "registryDependencies": [
-        "@tendkit/channel-utils"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json"
       ],
       "files": [
         {
@@ -222,7 +222,7 @@
       "title": "WhatsApp channel",
       "description": "WhatsApp Business Cloud API, directly with Meta.",
       "registryDependencies": [
-        "@tendkit/channel-utils"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json"
       ],
       "files": [
         {
@@ -238,7 +238,7 @@
       "title": "Telegram channel",
       "description": "A Telegram bot.",
       "registryDependencies": [
-        "@tendkit/channel-utils"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json"
       ],
       "files": [
         {
@@ -254,7 +254,7 @@
       "title": "API channel",
       "description": "Signed HTTP requests from your own forms and backends.",
       "registryDependencies": [
-        "@tendkit/channel-utils"
+        "https://tendkit.softwaresavants.dev/r/channel-utils.json"
       ],
       "files": [
         {

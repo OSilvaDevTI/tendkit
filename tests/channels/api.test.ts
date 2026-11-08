@@ -14,9 +14,9 @@ const request = (body: string, headers: Record<string, string>) =>
 
 const submission = {
   id: "form_42",
-  from: { email: "mariem@nour.test", name: "Mariem" },
+  from: { email: "emma@northwind.test", name: "Emma" },
   subject: "Payout not received",
-  text: "Salam, where is my payout?",
+  text: "Hi, where is my payout?",
   attachments: [{ filename: "receipt.pdf", contentType: "application/pdf", contentBase64: base64Encode(utf8("pdf")) }],
   receivedAt: "2026-11-07T09:00:00Z",
 };
@@ -28,10 +28,11 @@ describe("api channel", () => {
     const { attachments, ...message } = (events[0] as Extract<ChannelEvent, { type: "message" }>).message;
     expect(message).toEqual({
       providerMessageId: "form_42",
-      from: { address: "mariem@nour.test", name: "Mariem" },
+      source: "api",
+      from: { address: "emma@northwind.test", name: "Emma" },
       to: [{ address: "Contact form" }],
       subject: "Payout not received",
-      text: "Salam, where is my payout?",
+      text: "Hi, where is my payout?",
       html: null,
       receivedAt: new Date("2026-11-07T09:00:00Z"),
     });
@@ -44,7 +45,7 @@ describe("api channel", () => {
     const body = JSON.stringify(submission);
     const ch = channel();
     const headers = await signApiRequest(secret, body);
-    await expect(ch.webhook!(request(body.replace("Mariem", "Mallory"), headers))).rejects.toBeInstanceOf(WebhookError);
+    await expect(ch.webhook!(request(body.replace("Emma", "Mallory"), headers))).rejects.toBeInstanceOf(WebhookError);
 
     const stale = Math.floor(Date.now() / 1000) - 600;
     await expect(

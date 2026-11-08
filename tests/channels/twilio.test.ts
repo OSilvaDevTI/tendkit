@@ -63,7 +63,7 @@ describe("twilio whatsapp webhook", () => {
       id: "wa",
       accountSid: "AC1",
       authToken,
-      from: "whatsapp:+22220000000",
+      from: "whatsapp:+14155550100",
       webhookUrl,
       fetch,
     });
@@ -74,10 +74,10 @@ describe("twilio whatsapp webhook", () => {
       post({
         MessageSid: "MM1",
         SmsStatus: "received",
-        From: "whatsapp:+22222101555",
-        To: "whatsapp:+22220000000",
+        From: "whatsapp:+14155550133",
+        To: "whatsapp:+14155550100",
         Body: "Receipt attached",
-        ProfileName: "Mariem",
+        ProfileName: "Emma",
         NumMedia: "1",
         MediaUrl0: mediaUrl,
         MediaContentType0: "image/jpeg",
@@ -89,8 +89,8 @@ describe("twilio whatsapp webhook", () => {
     if (event.type !== "message") throw new Error("expected a message");
     expect(event.message).toMatchObject({
       providerMessageId: "MM1",
-      from: { address: "+22222101555", name: "Mariem" },
-      to: [{ address: "+22220000000" }],
+      from: { address: "+14155550133", name: "Emma" },
+      to: [{ address: "+14155550100" }],
       text: "Receipt attached",
     });
     const [file] = event.message.attachments!;
@@ -104,7 +104,7 @@ describe("twilio whatsapp webhook", () => {
   });
 
   it("maps status callbacks, including errors", async () => {
-    const channel = twilioChannel({ id: "wa", accountSid: "AC1", authToken, from: "whatsapp:+22220000000", webhookUrl });
+    const channel = twilioChannel({ id: "wa", accountSid: "AC1", authToken, from: "whatsapp:+14155550100", webhookUrl });
     const failed = await channel.webhook!(
       post({ MessageSid: "SM9", MessageStatus: "undelivered", ErrorCode: "63016", SmsStatus: "undelivered" })
     );
@@ -143,8 +143,8 @@ describe("twilio send", () => {
 
   it("explains a closed WhatsApp window", async () => {
     const { fetch } = mockFetch(() => json({ code: 63016, message: "Failed to send freeform message", status: 400 }, 400));
-    const channel = twilioChannel({ id: "wa", accountSid: "AC1", authToken, from: "whatsapp:+22220000000", webhookUrl, fetch });
-    const error = await channel.send({ id: "m1", to: [{ address: "+22222101555" }], text: "Hello" }).catch((e) => e);
+    const channel = twilioChannel({ id: "wa", accountSid: "AC1", authToken, from: "whatsapp:+14155550100", webhookUrl, fetch });
+    const error = await channel.send({ id: "m1", to: [{ address: "+14155550133" }], text: "Hello" }).catch((e) => e);
     expect(error).toBeInstanceOf(ChannelError);
     expect(error.message).toContain("24-hour");
     expect(error.retryable).toBe(false);

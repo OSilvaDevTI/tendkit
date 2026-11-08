@@ -13,7 +13,7 @@ const update = (message: Record<string, unknown>, secret = base.secretToken) =>
   });
 
 const chat = { id: 4242, type: "private" };
-const from = { id: 4242, is_bot: false, first_name: "Mariem", last_name: "Ahmed" };
+const from = { id: 4242, is_bot: false, first_name: "Emma", last_name: "Clarke" };
 
 describe("telegram webhook", () => {
   it("rejects requests without the secret token", async () => {
@@ -45,7 +45,7 @@ describe("telegram webhook", () => {
     if (event.type !== "message") throw new Error("expected a message");
     expect(event.message).toMatchObject({
       providerMessageId: "4242:77",
-      from: { address: "4242", name: "Mariem Ahmed" },
+      from: { address: "4242", name: "Emma Clarke" },
       text: "This is the error",
       receivedAt: new Date(1762160400_000),
     });

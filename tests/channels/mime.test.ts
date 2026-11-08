@@ -9,14 +9,14 @@ describe("buildRawEmail", () => {
   it("round-trips Arabic headers, bodies and attachment names through a real parser", async () => {
     const { raw, messageId } = buildRawEmail({
       from: { address: "support@acme.test", name: "فريق الدعم — Acme" },
-      to: [{ address: "mariem@nour.test", name: "مريم محمد" }, { address: "ops@nour.test", name: 'Ops, "Night" shift' }],
+      to: [{ address: "emma@northwind.test", name: "مريم محمد" }, { address: "ops@northwind.test", name: 'Ops, "Night" shift' }],
       replyTo: { address: "support+t-abc@in.acme.test" },
       subject,
       text: body,
       html: `<p dir="auto">${body}</p>`,
       attachments: [{ filename: "إيصال التحويل.pdf", contentType: "application/pdf", content: pdf }],
-      inReplyTo: "<m2@nour.test>",
-      references: ["<m1@nour.test>", "<m2@nour.test>"],
+      inReplyTo: "<m2@northwind.test>",
+      references: ["<m1@northwind.test>", "<m2@northwind.test>"],
       headers: { "Auto-Submitted": "auto-replied", "Message-ID": "<ignored@x>" },
     });
 
@@ -30,14 +30,14 @@ describe("buildRawEmail", () => {
     expect(parsed.subject).toBe(subject);
     expect(parsed.from).toEqual({ address: "support@acme.test", name: "فريق الدعم — Acme" });
     expect(parsed.to).toEqual([
-      { address: "mariem@nour.test", name: "مريم محمد" },
-      { address: "ops@nour.test", name: 'Ops, "Night" shift' },
+      { address: "emma@northwind.test", name: "مريم محمد" },
+      { address: "ops@northwind.test", name: 'Ops, "Night" shift' },
     ]);
     expect(parsed.text?.trim()).toBe(body);
     expect(parsed.html).toContain(body);
     expect(parsed.rfcMessageId).toBe(messageId);
-    expect(parsed.inReplyTo).toBe("<m2@nour.test>");
-    expect(parsed.references).toEqual(["<m1@nour.test>", "<m2@nour.test>"]);
+    expect(parsed.inReplyTo).toBe("<m2@northwind.test>");
+    expect(parsed.references).toEqual(["<m1@northwind.test>", "<m2@northwind.test>"]);
     expect(parsed.headers?.["auto-submitted"]).toBe("auto-replied");
 
     expect(parsed.attachments).toHaveLength(1);
@@ -60,17 +60,17 @@ describe("buildRawEmail", () => {
 
 describe("parseRawEmail", () => {
   const raw = [
-    "From: =?UTF-8?B?2YXYsdmK2YU=?= <Mariem@Nour.test>",
+    "From: =?UTF-8?B?2YXYsdmK2YU=?= <Emma@Northwind.test>",
     "To: Support: support@acme.test, help@acme.test;",
-    "Cc: boss@nour.test",
+    "Cc: boss@northwind.test",
     "Subject: Re: Payout",
     "Date: Sat, 07 Nov 2026 09:30:00 +0100",
-    "Message-ID: <m3@nour.test>",
+    "Message-ID: <m3@northwind.test>",
     "In-Reply-To: <out-1@acme.test>",
-    "References: <m1@nour.test>",
+    "References: <m1@northwind.test>",
     "\t<out-1@acme.test>",
     "Auto-Submitted: no",
-    "DKIM-Signature: v=1; a=rsa-sha256; d=nour.test",
+    "DKIM-Signature: v=1; a=rsa-sha256; d=northwind.test",
     "Content-Type: multipart/mixed; boundary=b",
     "",
     "--b",
@@ -92,12 +92,12 @@ describe("parseRawEmail", () => {
     const msg = await parseRawEmail(raw, { providerMessageId: "p-1" });
     expect(msg).toMatchObject({
       providerMessageId: "p-1",
-      from: { address: "Mariem@Nour.test", name: "مريم" },
+      from: { address: "Emma@Northwind.test", name: "مريم" },
       to: [{ address: "support@acme.test" }, { address: "help@acme.test" }],
-      cc: [{ address: "boss@nour.test", name: null }],
-      rfcMessageId: "<m3@nour.test>",
+      cc: [{ address: "boss@northwind.test", name: null }],
+      rfcMessageId: "<m3@northwind.test>",
       inReplyTo: "<out-1@acme.test>",
-      references: ["<m1@nour.test>", "<out-1@acme.test>"],
+      references: ["<m1@northwind.test>", "<out-1@acme.test>"],
       receivedAt: new Date("2026-11-07T08:30:00Z"),
       headers: { "auto-submitted": "no", "content-type": expect.stringContaining("multipart/mixed") },
     });
@@ -108,8 +108,8 @@ describe("parseRawEmail", () => {
 
   it("imports only the headers of a message over the size cap", async () => {
     const msg = await parseRawEmail(raw, { maxBytes: 200 });
-    expect(msg.rfcMessageId).toBe("<m3@nour.test>");
-    expect(msg.providerMessageId).toBe("<m3@nour.test>");
+    expect(msg.rfcMessageId).toBe("<m3@northwind.test>");
+    expect(msg.providerMessageId).toBe("<m3@northwind.test>");
     expect(msg.subject).toBe("Re: Payout");
     expect(msg.text).toMatch(/only its headers were imported/);
     expect(msg.attachments).toEqual([]);

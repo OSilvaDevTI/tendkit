@@ -120,3 +120,17 @@
 .shiki { background: transparent !important; }
 .shiki span { color: var(--shiki-light); }
 .dark .shiki span { color: var(--shiki-dark); }
+
+/* Docs prose: readable defaults for plain elements inside a docs page. */
+.docs-prose > p, .docs-prose li > p, .docs-prose .docs-steps p { line-height: 1.75; }
+.docs-prose > p { margin-block: 1rem; color: color-mix(in oklch, var(--foreground) 88%, transparent); }
+.docs-prose > ul { margin-block: 1rem; padding-inline-start: 1.25rem; list-style: disc; }
+.docs-prose > ul > li { margin-block: 0.4rem; line-height: 1.7; color: color-mix(in oklch, var(--foreground) 88%, transparent); }
+.docs-prose a:not([class]) { font-weight: 500; text-decoration: underline; text-underline-offset: 4px; }
+.docs-prose :not(pre) > code:not([class]) {
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--muted);
+  padding: 0.15em 0.35em;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.85em;
+}

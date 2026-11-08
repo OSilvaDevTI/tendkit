@@ -74,6 +74,8 @@ export function apiChannel(config: ApiChannelConfig): Channel {
             type: "message",
             message: {
               providerMessageId: message.id,
+              // Anyone can type any address into a form: never link it to that account or auto-reply.
+              source: "api",
               from: { address: message.from.email.trim(), name: message.from.name?.trim() || null },
               to: [{ address: config.address }],
               subject: message.subject ?? null,

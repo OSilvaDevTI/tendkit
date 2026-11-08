@@ -38,6 +38,14 @@ function apply(theme: Theme) {
   window.setTimeout(() => root.classList.remove("theme-transition"), 260);
 }
 
+/** Re-reads the stored theme, for another window (the demo frame) that changed it. */
+export function syncThemeFromStorage() {
+  loaded = false;
+  current = read();
+  apply(current);
+  listeners.forEach((l) => l());
+}
+
 export function setTheme(patch: Partial<Theme>) {
   current = { ...read(), ...patch };
   try {

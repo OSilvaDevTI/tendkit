@@ -4,7 +4,7 @@
   "title": "Channel helpers",
   "description": "WebCrypto signature checks shared by channel adapters.",
   "registryDependencies": [
-    "@tendkit/support"
+    "https://tendkit.softwaresavants.dev/r/support.json"
   ],
   "files": [
     {

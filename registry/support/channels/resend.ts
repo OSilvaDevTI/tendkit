@@ -310,7 +310,7 @@ function parseHeaderBlock(block: string): Record<string, string> {
   return headers;
 }
 
-/** "Mariem <m@x.mr>", "\"Doe, J\" <j@x.mr>" or "j@x.mr". */
+/** "Emma <m@example.com>", "\"Doe, J\" <j@example.com>" or "j@example.com". */
 function parseAddress(value: string): Address {
   const match = /^(.*)<([^<>]+)>\s*$/.exec(value.trim());
   if (!match) return { address: value.trim(), name: null };

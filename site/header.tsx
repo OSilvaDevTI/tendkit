@@ -1,37 +1,48 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { GITHUB_URL } from "./config";
+import { githubStars } from "./github-stars";
 import { Logo } from "./logo";
+import { DocsSearch } from "./search";
 import { ModeToggle } from "./theme";
 
 const NAV = [
-  { href: "/docs", label: "Docs" },
-  { href: "/docs/channels", label: "Channels" },
-  { href: "/demo", label: "Demo" },
+  { href: "/docs", label: "Docs", className: "" },
+  { href: "/docs/channels", label: "Channels", className: "max-sm:hidden" },
+  { href: "/demo", label: "Demo", className: "" },
 ];
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const stars = await githubStars();
   return (
     <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 text-sm font-semibold" aria-label="Tendkit home">
-          <Logo className="size-5" />
-          Tendkit
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:px-6">
+        <Link href="/" className="me-1 flex items-center gap-2 sm:me-3 text-[15px] font-semibold tracking-[-0.01em]" aria-label="Tendkit home">
+          <Logo className="size-6" />
+          <span className="max-sm:hidden">Tendkit</span>
         </Link>
-        <nav className="flex flex-1 items-center gap-4 text-sm text-muted-foreground">
+        <nav className="flex items-center gap-1 text-sm">
           {NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-foreground">
-              {item.label}
-            </Link>
+            <Button key={item.href} asChild variant="ghost" size="sm" className={`h-8 px-2.5 font-medium text-foreground/80 hover:text-foreground ${item.className}`}>
+              <Link href={item.href}>{item.label}</Link>
+            </Button>
           ))}
         </nav>
-        <a
-          href={GITHUB_URL}
-          aria-label="Tendkit on GitHub"
-          className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-        >
-          <GitHubMark className="size-4" />
-        </a>
-        <ModeToggle />
+        <div className="ms-auto flex items-center gap-1.5">
+          <DocsSearch />
+          <Button asChild variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
+            <a href={GITHUB_URL} aria-label="Tendkit on GitHub">
+              <GitHubMark className="size-4" />
+              {stars && <span className="text-xs text-muted-foreground tabular-nums">{stars}</span>}
+            </a>
+          </Button>
+          <Separator orientation="vertical" className="mx-0.5 h-4! max-sm:hidden" />
+          <ModeToggle />
+          <Button asChild size="sm" className="ms-1 h-8 rounded-full px-3.5 max-md:hidden">
+            <Link href="/docs/installation">Get Started</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );

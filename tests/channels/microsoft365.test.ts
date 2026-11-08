@@ -56,14 +56,14 @@ const customerMail = {
     { name: "Content-Type", value: "multipart/related; boundary=x" },
     { name: "Received", value: "from mx.google.com" },
   ],
-  from: { emailAddress: { name: "Mariem", address: "mariem@nour.test" } },
+  from: { emailAddress: { name: "Emma", address: "emma@northwind.test" } },
   toRecipients: [{ emailAddress: { name: "Acme Support", address: "support@acme.test" } }],
-  ccRecipients: [{ emailAddress: { address: "sidi@nour.test" } }],
+  ccRecipients: [{ emailAddress: { address: "yusuf@northwind.test" } }],
   subject: "Re: Payout not received",
   body: {
     contentType: "html",
     content:
-      '<div>It arrived, thanks.<img src="cid:logo@nour"></div><div id="divRplyFwdMsg"><b>From:</b> Acme Support</div><div>The payout was sent.</div>',
+      '<div>It arrived, thanks.<img src="cid:logo@northwind"></div><div id="divRplyFwdMsg"><b>From:</b> Acme Support</div><div>The payout was sent.</div>',
   },
   receivedDateTime: "2026-11-07T10:00:00Z",
   sentDateTime: "2026-11-07T09:59:58Z",
@@ -82,7 +82,7 @@ const attachments = {
       isInline: false,
       contentBytes: base64Encode(utf8("pdf")),
     },
-    { "@odata.type": "#microsoft.graph.fileAttachment", id: "att-2", name: "logo.png", contentType: "image/png", size: 5, isInline: true, contentId: "<logo@nour>" },
+    { "@odata.type": "#microsoft.graph.fileAttachment", id: "att-2", name: "logo.png", contentType: "image/png", size: 5, isInline: true, contentId: "<logo@northwind>" },
     { "@odata.type": "#microsoft.graph.referenceAttachment", id: "att-3", name: "Shared folder" },
   ],
 };
@@ -146,9 +146,9 @@ describe("microsoft365Channel webhook", () => {
     expect(m).toMatchObject({
       providerMessageId: "imm-in-1",
       direction: "inbound",
-      from: { address: "mariem@nour.test", name: "Mariem" },
+      from: { address: "emma@northwind.test", name: "Emma" },
       to: [{ address: "support@acme.test", name: "Acme Support" }],
-      cc: [{ address: "sidi@nour.test", name: null }],
+      cc: [{ address: "yusuf@northwind.test", name: null }],
       subject: "Re: Payout not received",
       rfcMessageId: "<CA+abc@mail.gmail.com>",
       inReplyTo: "<out-1@acme.test>",
@@ -163,7 +163,7 @@ describe("microsoft365Channel webhook", () => {
 
     expect(m!.attachments!.map((a) => [a.filename, a.contentType, a.inline, a.contentId])).toEqual([
       ["receipt.pdf", "application/pdf", false, null],
-      ["logo.png", "image/png", true, "logo@nour"],
+      ["logo.png", "image/png", true, "logo@northwind"],
     ]);
     expect(new TextDecoder().decode(await m!.attachments![0]!.read())).toBe("pdf");
     expect(new TextDecoder().decode(await m!.attachments![1]!.read())).toBe("image");
@@ -193,7 +193,7 @@ describe("microsoft365Channel sync", () => {
     internetMessageId: "<agent@acme.test>",
     internetMessageHeaders: undefined,
     from: { emailAddress: { name: "Acme Support", address: "support@acme.test" } },
-    toRecipients: [{ emailAddress: { address: "mariem@nour.test" } }],
+    toRecipients: [{ emailAddress: { address: "emma@northwind.test" } }],
     body: { contentType: "html", content: "<p>Sent from Outlook.</p>" },
     hasAttachments: false,
     sentDateTime: "2026-11-07T11:00:00Z",
@@ -308,7 +308,7 @@ describe("microsoft365Channel send", () => {
   ];
   const outbound = {
     id: "msg_1",
-    to: [{ address: "mariem@nour.test", name: "Mariem" }],
+    to: [{ address: "emma@northwind.test", name: "Emma" }],
     subject: "Re: Payout not received",
     text: "It was sent on Oct 14.",
     html: "<p>It was sent on Oct 14.</p>",
@@ -332,7 +332,7 @@ describe("microsoft365Channel send", () => {
     expect(patch!.body).toMatchObject({
       subject: "Re: Payout not received",
       body: { contentType: "html", content: "<p>It was sent on Oct 14.</p>" },
-      toRecipients: [{ emailAddress: { address: "mariem@nour.test", name: "Mariem" } }],
+      toRecipients: [{ emailAddress: { address: "emma@northwind.test", name: "Emma" } }],
       singleValueExtendedProperties: [{ value: "msg_1" }],
     });
     expect(attachment!.body).toMatchObject({ name: "receipt.pdf", contentBytes: base64Encode(utf8("pdf")) });

@@ -15,7 +15,7 @@ describe("inbound email", () => {
 
     const { items } = await t.support.listTickets({ status: "open", sort: "waiting", limit: 10, offset: 0 }, "agent_a");
     expect(items).toHaveLength(1);
-    expect(items[0]!.customer).toEqual({ id: "cus_nour", name: "Boutique Nour" });
+    expect(items[0]!.customer).toEqual({ id: "cus_northwind", name: "Northwind Coffee" });
     expect(items[0]!.waitingSince).toEqual(t.now());
     expect(items[0]!.unread).toBe(true);
     expect(t.notifications.map((n) => n.type)).toEqual(["ticket.created"]);
@@ -35,7 +35,7 @@ describe("inbound email", () => {
     await t.support.ingest("email", message(t));
     await t.support.ingest("email", message(t, { from: "stranger@spam.test", subject: "Cheap watches" }));
     expect(t.email.sent).toHaveLength(1);
-    expect(t.email.sent[0]!.to).toEqual([{ address: "mariem@nour.test", name: "Mariem" }]);
+    expect(t.email.sent[0]!.to).toEqual([{ address: "emma@northwind.test", name: "Emma" }]);
     expect(t.email.sent[0]!.headers?.["Auto-Submitted"]).toBe("auto-replied");
   });
 
@@ -87,14 +87,14 @@ describe("inbound email", () => {
     const { ticketId } = (await t.support.ingest(
       "email",
       message(t, {
-        text: "Is the payout sent?\n\nMariem Sidi\nBoutique Nour",
-        html: '<div>Is the payout sent?</div><div id="Signature"><p>Mariem Sidi</p><p>Boutique Nour</p></div>',
+        text: "Is the payout sent?\n\nEmma Clarke\nNorthwind Coffee",
+        html: '<div>Is the payout sent?</div><div id="Signature"><p>Emma Clarke</p><p>Northwind Coffee</p></div>',
       })
     )) as { ticketId: string };
     const detail = await t.support.getTicket(ticketId, "agent_a");
     const first = detail.timeline.find((e) => e.type === "message")!;
     expect(first.type === "message" && first.message.text).toBe("Is the payout sent?");
-    expect(first.type === "message" && first.message.fullText).toContain("Boutique Nour");
+    expect(first.type === "message" && first.message.fullText).toContain("Northwind Coffee");
   });
 });
 
@@ -112,7 +112,7 @@ describe("replies and threading", () => {
     expect(sentMessage.deliveryStatus).toBe("sent");
     const out = t.email.sent[0]!;
     expect(out.subject).toBe("Re: Payout not received");
-    expect(out.text).toBe("It was sent on Oct 14.\n\nAhmed");
+    expect(out.text).toBe("It was sent on Oct 14.\n\nDaniel");
     expect(out.inReplyTo).toMatch(/^<in-\d+@mail\.test>$/);
     expect(tokenFromAddress(out.replyTo!.address)).toBe(ticket.replyToken);
 
@@ -142,7 +142,7 @@ describe("replies and threading", () => {
     const { ticketId } = (await t.support.ingest("email", message(t))) as { ticketId: string };
     await t.support.reply({ ticketId, agentId: "agent_a", text: "Hello" });
     const token = t.email.sent.at(-1)!.replyTo!;
-    const attack = await t.support.ingest("email", message(t, { from: "ahmed@sahel.test", to: [token] }));
+    const attack = await t.support.ingest("email", message(t, { from: "lucas@lumen.test", to: [token] }));
     expect(attack).toMatchObject({ result: "created" });
     expect((attack as { ticketId: string }).ticketId).not.toBe(ticketId);
   });
@@ -151,7 +151,7 @@ describe("replies and threading", () => {
     const t = await setup();
     const first = inbound({ receivedAt: t.now() });
     const { ticketId } = (await t.support.ingest("email", { type: "message", message: first })) as { ticketId: string };
-    const colleague = await t.support.ingest("email", message(t, { from: "sidi@nour.test", inReplyTo: first.rfcMessageId }));
+    const colleague = await t.support.ingest("email", message(t, { from: "yusuf@northwind.test", inReplyTo: first.rfcMessageId }));
     expect(colleague).toEqual({ result: "appended", ticketId });
   });
 
@@ -217,13 +217,13 @@ describe("agent tools", () => {
   it("links an unknown sender to a customer for their later emails too", async () => {
     const t = await setup();
     const { ticketId } = (await t.support.ingest("email", message(t, { from: "moussa@gmail.test" }))) as { ticketId: string };
-    await t.support.linkCustomer({ ticketId, customerId: "cus_sahel", actorId: "agent_a" });
+    await t.support.linkCustomer({ ticketId, customerId: "cus_lumen", actorId: "agent_a" });
     await t.support.setStatus({ ticketId, status: "solved", actorId: "agent_a" });
     t.advance(30 * DAY);
     const next = (await t.support.ingest("email", message(t, { from: "moussa@gmail.test", subject: "Another" }))) as {
       ticketId: string;
     };
-    expect((await t.support.getTicket(next.ticketId, "agent_a")).customer?.id).toBe("cus_sahel");
+    expect((await t.support.getTicket(next.ticketId, "agent_a")).customer?.id).toBe("cus_lumen");
   });
 
   it("links a sender's earlier tickets once they're matched to a customer", async () => {
@@ -232,26 +232,26 @@ describe("agent tools", () => {
     const second = (await t.support.ingest("email", message(t, { from: "moussa@gmail.test", subject: "Another question" }))) as {
       ticketId: string;
     };
-    await t.support.linkCustomer({ ticketId: second.ticketId, customerId: "cus_sahel", actorId: "agent_a" });
-    expect((await t.support.getTicket(first.ticketId, "agent_a")).customer?.id).toBe("cus_sahel");
+    await t.support.linkCustomer({ ticketId: second.ticketId, customerId: "cus_lumen", actorId: "agent_a" });
+    expect((await t.support.getTicket(first.ticketId, "agent_a")).customer?.id).toBe("cus_lumen");
   });
 
   it("finds tickets by customer name, sender, number and message text", async () => {
     const t = await setup();
     await t.support.ingest("email", message(t));
-    await t.support.ingest("email", message(t, { from: "ahmed@sahel.test", subject: "Bankily", text: "Paiement en attente" }));
+    await t.support.ingest("email", message(t, { from: "lucas@lumen.test", subject: "Card payment", text: "Paiement en attente" }));
     const search = async (q: string) =>
       (await t.support.listTickets({ search: q, sort: "recent", limit: 10, offset: 0 }, "agent_a")).items.map((i) => i.subject);
-    expect(await search("sahel")).toEqual(["Bankily"]);
-    expect(await search("ahmed@")).toEqual(["Bankily"]);
-    expect(await search("attente")).toEqual(["Bankily"]);
+    expect(await search("lumen labs")).toEqual(["Card payment"]);
+    expect(await search("lucas@")).toEqual(["Card payment"]);
+    expect(await search("attente")).toEqual(["Card payment"]);
     expect(await search("payout")).toEqual(["Payout not received"]);
   });
 
   it("only sends uploads that belong to the ticket", async () => {
     const t = await setup({ acknowledgement: undefined });
     const a = (await t.support.ingest("email", message(t))) as { ticketId: string };
-    const b = (await t.support.ingest("email", message(t, { from: "ahmed@sahel.test", subject: "Other" }))) as { ticketId: string };
+    const b = (await t.support.ingest("email", message(t, { from: "lucas@lumen.test", subject: "Other" }))) as { ticketId: string };
     const upload = await t.support.uploadAttachment({
       ticketId: b.ticketId,
       filename: "statement.pdf",
@@ -275,7 +275,7 @@ describe("per-contact channels", () => {
       id: "whatsapp",
       kind: "whatsapp",
       identityKind: "whatsapp",
-      address: "+22220000000",
+      address: "+14155550100",
       replyAddress: undefined,
       capabilities: { ...emailCapabilities, subject: false, conversation: "contact", replyWindowHours: 24 },
     });
@@ -286,12 +286,12 @@ describe("per-contact channels", () => {
     const msg = (text: string) =>
       ({
         type: "message",
-        message: inbound({ from: "+222 22 10 15 55", to: [], subject: null, text, receivedAt: t.now(), rfcMessageId: null }),
+        message: inbound({ from: "+1 415 555 0133", to: [], subject: null, text, receivedAt: t.now(), rfcMessageId: null }),
       }) as const;
-    const { ticketId } = (await t.support.ingest("whatsapp", msg("Salam"))) as { ticketId: string };
+    const { ticketId } = (await t.support.ingest("whatsapp", msg("Hello"))) as { ticketId: string };
     expect(await t.support.ingest("whatsapp", msg("Are you there?"))).toEqual({ result: "appended", ticketId });
     await t.support.reply({ ticketId, agentId: "agent_a", text: "Yes" });
-    expect(wa.sent[0]!.to[0]!.address).toBe("+222 22 10 15 55");
+    expect(wa.sent[0]!.to[0]!.address).toBe("+1 415 555 0133");
     expect(wa.sent[0]!.text).toBe("Yes");
 
     t.advance(25 * HOUR);
@@ -304,30 +304,30 @@ describe("customer portal", () => {
   it("shows a customer their requests without internal notes, and members only their own", async () => {
     const t = await setup({ acknowledgement: undefined });
     const mine = await t.support.portal.create({
-      customerId: "cus_nour",
-      userId: "usr_mariem",
-      email: "mariem@nour.test",
-      name: "Mariem",
+      customerId: "cus_northwind",
+      userId: "usr_emma",
+      email: "emma@northwind.test",
+      name: "Emma",
       subject: "Add Masrivi",
       text: "Can you enable Masrivi?",
     });
-    await t.support.ingest("email", message(t, { from: "sidi@nour.test", subject: "Sidi's question" }));
+    await t.support.ingest("email", message(t, { from: "yusuf@northwind.test", subject: "Sidi's question" }));
     await t.support.addNote({ ticketId: mine.id, agentId: "agent_k", text: "Check their contract first" });
     t.advance(HOUR);
     await t.support.reply({ ticketId: mine.id, agentId: "agent_k", text: "Done, it's live." });
 
-    const all = await t.support.portal.list({ customerId: "cus_nour", readerId: "usr_mariem" });
+    const all = await t.support.portal.list({ customerId: "cus_northwind", readerId: "usr_emma" });
     expect(all.items.map((i) => i.subject).sort()).toEqual(["Add Masrivi", "Sidi's question"].sort());
-    const own = await t.support.portal.list({ customerId: "cus_nour", userId: "usr_mariem", readerId: "usr_mariem" });
+    const own = await t.support.portal.list({ customerId: "cus_northwind", userId: "usr_emma", readerId: "usr_emma" });
     expect(own.items.map((i) => i.subject)).toEqual(["Add Masrivi"]);
-    expect(own.items[0]).toMatchObject({ previewAuthor: "Khadija", unread: true });
+    expect(own.items[0]).toMatchObject({ previewAuthor: "Priya", unread: true });
 
-    const detail = await t.support.portal.get({ ticketId: mine.id, customerId: "cus_nour", readerId: "usr_mariem" });
+    const detail = await t.support.portal.get({ ticketId: mine.id, customerId: "cus_northwind", readerId: "usr_emma" });
     expect(detail.messages.map((m) => [m.kind, m.author, m.text])).toEqual([
-      ["inbound", "Mariem", "Can you enable Masrivi?"],
-      ["outbound", "Khadija", "Done, it's live."],
+      ["inbound", "Emma", "Can you enable Masrivi?"],
+      ["outbound", "Priya", "Done, it's live."],
     ]);
-    await expect(t.support.portal.get({ ticketId: mine.id, customerId: "cus_sahel", readerId: "usr_ahmed" })).rejects.toThrow(
+    await expect(t.support.portal.get({ ticketId: mine.id, customerId: "cus_lumen", readerId: "usr_lucas" })).rejects.toThrow(
       "Request not found"
     );
   });
@@ -339,7 +339,7 @@ describe("untrusted senders", () => {
     const { ticketId } = (await t.support.ingest("email", message(t, { source: "api" }))) as { ticketId: string };
     expect((await t.support.getTicket(ticketId, "agent_a")).customer).toBeNull();
     expect(t.email.sent).toEqual([]);
-    expect((await t.support.portal.list({ customerId: "cus_nour", readerId: "usr_mariem" })).items).toEqual([]);
+    expect((await t.support.portal.list({ customerId: "cus_northwind", readerId: "usr_emma" })).items).toEqual([]);
   });
 
   it("treats mail that failed DMARC as an unknown sender that can't thread by headers", async () => {

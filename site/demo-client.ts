@@ -2,7 +2,10 @@ import type {
   Agent,
   Customer,
   FileInfo,
+  PortalMessage,
+  PortalTicket,
   SupportClient,
+  SupportPortalClient,
   TicketCounts,
   TicketDetail,
   TicketListItem,
@@ -18,14 +21,14 @@ import type {
  */
 
 export const VIEWER: Agent = { id: "agent_you", name: "Alex Chen" };
-const AGENTS: Agent[] = [VIEWER, { id: "agent_khadija", name: "Khadija Ali" }, { id: "agent_tom", name: "Tom Okafor" }];
+const AGENTS: Agent[] = [VIEWER, { id: "agent_priya", name: "Priya Patel" }, { id: "agent_tom", name: "Tom Okafor" }];
 
 export type DemoAccount = Customer & { plan: string; seats: number; since: string; lastOrder: string };
 export const ACCOUNTS: DemoAccount[] = [
-  { id: "acc_nour", name: "Boutique Nour", plan: "Growth", seats: 4, since: "Mar 2025", lastOrder: "#1043 · $86.00" },
+  { id: "acc_northwind", name: "Northwind Coffee", plan: "Growth", seats: 4, since: "Mar 2025", lastOrder: "#1043 · $86.00" },
   { id: "acc_atlas", name: "Atlas Freight", plan: "Business", seats: 18, since: "Nov 2024", lastOrder: "#7718 · $1,240.00" },
   { id: "acc_sol", name: "Clínica Sol", plan: "Starter", seats: 2, since: "Aug 2026", lastOrder: "#0291 · $49.00" },
-  { id: "acc_haddad", name: "Haddad & Co", plan: "Growth", seats: 6, since: "Jan 2026", lastOrder: "#3310 · $312.50" },
+  { id: "acc_rossi", name: "Rossi Studio", plan: "Growth", seats: 6, since: "Jan 2026", lastOrder: "#3310 · $312.50" },
   { id: "acc_nordvik", name: "Nordvik", plan: "Business", seats: 25, since: "Jun 2025", lastOrder: "#5521 · $2,016.00" },
 ];
 
@@ -125,33 +128,33 @@ function seed(): State {
 
   add({
     channel: "email",
-    name: "Mariem Sidi",
-    identity: "mariem@nour.shop",
-    account: "acc_nour",
+    name: "Emma Clarke",
+    identity: "emma@northwind.coffee",
+    account: "acc_northwind",
     subject: "Payout not received",
     status: "open",
     thread: [
       {
         kind: "inbound",
         ago: 26,
-        text: "Hi, last week's payout hasn't reached our bank account yet. Could you check what happened?\n\nThanks,\nMariem",
+        text: "Hi, last week's payout hasn't reached our bank account yet. Could you check what happened?\n\nThanks,\nEmma",
         fullText:
-          "Hi, last week's payout hasn't reached our bank account yet. Could you check what happened?\n\nThanks,\nMariem\n\nMariem Sidi\nOwner, Boutique Nour\n\nSent from my iPhone",
+          "Hi, last week's payout hasn't reached our bank account yet. Could you check what happened?\n\nThanks,\nEmma\n\nEmma Clarke\nOwner, Northwind Coffee\n\nSent from my iPhone",
       },
     ],
   });
   add({
     channel: "whatsapp",
-    name: "Ahmed Salem",
+    name: "Daniel Kim",
     identity: "+44 7700 900123",
     account: "acc_atlas",
     subject: null,
     status: "open",
-    assigneeId: "agent_khadija",
+    assigneeId: "agent_priya",
     read: true,
     thread: [
       { kind: "inbound", ago: 190, text: "Hello! Can I add a second admin to our account?" },
-      { kind: "note", ago: 160, authorId: "agent_khadija", text: "They're on Business, so a second admin is included. Checking whether the invite email bounced." },
+      { kind: "note", ago: 160, authorId: "agent_priya", text: "They're on Business, so a second admin is included. Checking whether the invite email bounced." },
     ],
   });
   add({
@@ -193,9 +196,9 @@ function seed(): State {
   });
   add({
     channel: "email",
-    name: "Omar Haddad",
-    identity: "omar@haddad.co",
-    account: "acc_haddad",
+    name: "Sofia Rossi",
+    identity: "sofia@rossi.studio",
+    account: "acc_rossi",
     subject: "Two-factor codes not arriving",
     status: "solved",
     assigneeId: VIEWER.id,
@@ -204,6 +207,20 @@ function seed(): State {
       { kind: "inbound", ago: 1500, text: "My 2FA codes stopped arriving this morning." },
       { kind: "outbound", ago: 1460, authorId: VIEWER.id, text: "Your carrier was blocking our sender. I've switched you to WhatsApp codes, can you try again?" },
       { kind: "inbound", ago: 1440, text: "Thanks, that worked!" },
+    ],
+  });
+  add({
+    channel: "email",
+    name: "Emma Clarke",
+    identity: "emma@northwind.coffee",
+    account: "acc_northwind",
+    subject: "Change our billing email",
+    status: "solved",
+    assigneeId: "agent_priya",
+    read: true,
+    thread: [
+      { kind: "inbound", ago: 9000, text: "Could invoices go to accounts@northwind.coffee from now on?" },
+      { kind: "outbound", ago: 8950, authorId: "agent_priya", text: "Done. The next invoice goes to accounts@northwind.coffee." },
     ],
   });
   add({
@@ -226,7 +243,8 @@ const FOLLOW_UPS = [
 ];
 
 /** A support client backed by browser memory. `onChange` fires when the customer writes back. */
-export function createDemoClient(onChange: () => void): SupportClient {
+/** The agent and portal clients, sharing one in-browser state: a portal request lands in the inbox. */
+export function createDemoClients(onChange: () => void): { agent: SupportClient; portal: SupportPortalClient } {
   ids = 0; // the same ticket ids every time, so links like ?ticket=tkt_1 are stable
   const s = seed();
   const delay = <T,>(value: T) => new Promise<T>((resolve) => setTimeout(() => resolve(value), 120));
@@ -285,7 +303,7 @@ export function createDemoClient(onChange: () => void): SupportClient {
     }, 6000);
   };
 
-  return {
+  const agentClient: SupportClient = {
     async listTickets(q) {
       const term = q.search?.toLowerCase();
       let items = s.tickets.filter((t) => t.status === q.status);
@@ -427,4 +445,91 @@ export function createDemoClient(onChange: () => void): SupportClient {
       return delay(ACCOUNTS.filter((a) => a.name.toLowerCase().includes(q)).map(({ id, name }) => ({ id, name })));
     },
   };
+
+  // The customer portal, as Emma Clarke of Northwind Coffee sees it.
+  const CUSTOMER = { account: "acc_northwind", name: "Emma Clarke", email: "emma@northwind.coffee" };
+  const visible = (m: TimelineMessage) => m.kind !== "note" && !m.auto;
+  const portalTicket = (t: Ticket): PortalTicket => {
+    const last = s.messages.get(t.id)!.filter(visible).at(-1)!;
+    return {
+      id: t.id,
+      subject: t.subject,
+      status: t.status,
+      createdAt: t.createdAt,
+      lastMessageAt: t.lastMessageAt,
+      preview: last.text,
+      previewKind: last.kind === "note" ? null : last.kind,
+      previewAuthor: last.kind === "outbound" ? (agent(last.authorId)?.name.split(" ")[0] ?? null) : null,
+      unread: false,
+    };
+  };
+  const mine = () => s.tickets.filter((t) => t.customerId === CUSTOMER.account && t.status !== "spam");
+
+  const portal: SupportPortalClient = {
+    async list() {
+      const items = mine().sort((a, b) => +b.lastMessageAt - +a.lastMessageAt).map(portalTicket);
+      return delay({ items, total: items.length });
+    },
+    async get(id) {
+      const t = mine().find((x) => x.id === id);
+      if (!t) throw new Error("This request doesn't exist.");
+      const messages: PortalMessage[] = s.messages
+        .get(id)!
+        .filter(visible)
+        .map((m) => ({
+          id: m.id,
+          kind: m.kind as "inbound" | "outbound",
+          author: m.kind === "outbound" ? (agent(m.authorId)?.name.split(" ")[0] ?? null) : (m.from?.name ?? null),
+          text: m.text,
+          createdAt: m.createdAt,
+          attachments: m.attachments,
+        }));
+      return delay({ ticket: { id: t.id, subject: t.subject, status: t.status, createdAt: t.createdAt }, messages });
+    },
+    async create({ subject, text }) {
+      const at = new Date();
+      const id = nextId("tkt");
+      s.tickets.push({
+        id,
+        number: ++s.seq,
+        subject,
+        status: "open",
+        customerId: CUSTOMER.account,
+        assigneeId: null,
+        waitingSince: at,
+        createdAt: at,
+        channel: "email",
+        contact: { id: nextId("con"), name: CUSTOMER.name, identities: [{ kind: "email", value: CUSTOMER.email }], customerId: CUSTOMER.account, locale: "en" },
+        lastMessageAt: at,
+        answered: false,
+      });
+      s.messages.set(id, [message({ kind: "inbound", text, createdAt: at, source: "portal", from: { address: CUSTOMER.email, name: CUSTOMER.name } })]);
+      s.events.set(id, []);
+      onChange();
+      return delay({ id });
+    },
+    async reply({ ticketId, text }) {
+      const t = mine().find((x) => x.id === ticketId);
+      if (!t) throw new Error("This request doesn't exist.");
+      const at = new Date();
+      s.messages.get(ticketId)!.push(message({ kind: "inbound", text, createdAt: at, source: "portal", from: { address: CUSTOMER.email, name: CUSTOMER.name } }));
+      if (t.status === "solved") s.events.get(ticketId)!.push({ id: nextId("evt"), type: "reopened", actorId: null, data: {}, createdAt: at });
+      t.status = "open";
+      t.waitingSince = t.waitingSince ?? at;
+      t.lastMessageAt = at;
+      t.answered = true;
+      onChange();
+      return delay({ ok: true });
+    },
+    async attachmentUrl({ id }) {
+      return delay(s.files.get(id)?.url ?? "#");
+    },
+  };
+
+  return { agent: agentClient, portal };
+}
+
+/** The agent client only, for places that don't need the portal. */
+export function createDemoClient(onChange: () => void): SupportClient {
+  return createDemoClients(onChange).agent;
 }

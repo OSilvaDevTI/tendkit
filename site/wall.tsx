@@ -62,15 +62,15 @@ type Row = { id: number; name: string; account: string | null; subject: string; 
 
 const ARRIVALS: Omit<Row, "id">[] = [
   { name: "Lucia Romero", account: "Clínica Sol", subject: "Invoice has our old address", wait: "now", unread: true, channel: "sms" },
-  { name: "Omar Haddad", account: "Haddad & Co", subject: "2FA codes not arriving", wait: "now", unread: true, channel: "email" },
+  { name: "Sofia Rossi", account: "Rossi Studio", subject: "2FA codes not arriving", wait: "now", unread: true, channel: "email" },
   { name: "Sara Lind", account: "Nordvik", subject: "CSV export cuts at 1,000 rows", wait: "now", unread: true, channel: "email" },
-  { name: "Ahmed Salem", account: "Atlas Freight", subject: "Add a second admin", wait: "now", unread: true, channel: "whatsapp" },
+  { name: "Daniel Kim", account: "Atlas Freight", subject: "Add a second admin", wait: "now", unread: true, channel: "whatsapp" },
 ];
 
 const START: Row[] = [
-  { id: 3, name: "Mariem Sidi", account: "Boutique Nour", subject: "Payout not received", wait: "26 min", unread: true, channel: "email" },
+  { id: 3, name: "Emma Clarke", account: "Northwind Coffee", subject: "Payout not received", wait: "26 min", unread: true, channel: "email" },
   { id: 2, name: "Jordan Lee", account: null, subject: "Annual billing?", wait: "48 min", unread: true, channel: "email" },
-  { id: 1, name: "Ahmed Salem", account: "Atlas Freight", subject: "Add a second admin", wait: "3 hr", unread: false, channel: "whatsapp" },
+  { id: 1, name: "Daniel Kim", account: "Atlas Freight", subject: "Add a second admin", wait: "3 hr", unread: false, channel: "whatsapp" },
 ];
 
 const CHANNEL_ICON = { email: Mail, whatsapp: MessageCircle, sms: Smartphone } as const;
@@ -189,7 +189,7 @@ function TicketCard() {
       <CardHeader>
         <CardTitle>Payout not received</CardTitle>
         <CardDescription className="flex items-center gap-1.5">
-          <Mail className="size-3.5" /> mariem@nour.shop
+          <Mail className="size-3.5" /> emma@northwind.coffee
         </CardDescription>
         <CardAction>
           <Badge variant={status === "Open" ? "default" : "secondary"}>{status}</Badge>
@@ -258,7 +258,7 @@ function AccountCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Building2 className="size-4 text-muted-foreground" />
-          Boutique Nour
+          Northwind Coffee
         </CardTitle>
         <CardDescription>From your database, next to every ticket.</CardDescription>
       </CardHeader>
@@ -326,8 +326,8 @@ function LinkSenderCard() {
 /* ─── Status and assignee ──────────────────────────────────────────────────────────────── */
 
 function AssignCard() {
-  const agents = ["Alex Chen", "Khadija Ali", "Tom Okafor"];
-  const [assignee, setAssignee] = useState("Khadija Ali");
+  const agents = ["Alex Chen", "Priya Patel", "Tom Okafor"];
+  const [assignee, setAssignee] = useState("Priya Patel");
   return (
     <Card className="gap-3 py-4">
       <CardContent className="space-y-1 px-4">
@@ -358,7 +358,7 @@ function NoteCard() {
       <CardContent className="px-4">
         <div className="flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-300">
           <Lock className="size-3.5" />
-          Internal note · Khadija
+          Internal note · Priya
         </div>
         <p className="mt-2 text-sm leading-relaxed">They&apos;re on Business, so a second admin is included. Checking whether the invite bounced.</p>
       </CardContent>
@@ -463,7 +463,7 @@ function MailClientCard() {
         <span className="size-2.5 rounded-full bg-foreground/15" />
         <span className="size-2.5 rounded-full bg-foreground/15" />
         <span className="size-2.5 rounded-full bg-foreground/15" />
-        <span className="ms-2 text-xs text-muted-foreground">Mariem&apos;s inbox</span>
+        <span className="ms-2 text-xs text-muted-foreground">Emma&apos;s inbox</span>
       </div>
       <div className="space-y-3 px-4 py-4">
         <div>
@@ -545,7 +545,7 @@ function WhatsAppCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageCircle className="size-4 text-muted-foreground" />
-          Ahmed Salem
+          Daniel Kim
         </CardTitle>
         <CardDescription>WhatsApp · Atlas Freight</CardDescription>
       </CardHeader>

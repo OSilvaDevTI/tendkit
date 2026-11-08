@@ -7,7 +7,7 @@
     "postal-mime@^4.2"
   ],
   "registryDependencies": [
-    "@tendkit/channel-utils"
+    "https://tendkit.softwaresavants.dev/r/channel-utils.json"
   ],
   "files": [
     {

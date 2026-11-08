@@ -104,14 +104,14 @@ export function memoryStorage(): AttachmentStorage & { files: Map<string, Uint8A
 }
 
 export const customers = [
-  { id: "cus_nour", name: "Boutique Nour" },
-  { id: "cus_sahel", name: "Sahel Market" },
+  { id: "cus_northwind", name: "Northwind Coffee" },
+  { id: "cus_lumen", name: "Lumen Labs" },
 ];
 
 export const people: Record<string, { customerId: string; userId: string; name: string; locale: string }> = {
-  "mariem@nour.test": { customerId: "cus_nour", userId: "usr_mariem", name: "Mariem Mint Ahmed", locale: "en" },
-  "sidi@nour.test": { customerId: "cus_nour", userId: "usr_sidi", name: "Sidi", locale: "ar" },
-  "ahmed@sahel.test": { customerId: "cus_sahel", userId: "usr_ahmed", name: "Ahmed", locale: "fr" },
+  "emma@northwind.test": { customerId: "cus_northwind", userId: "usr_emma", name: "Emma Clarke", locale: "en" },
+  "yusuf@northwind.test": { customerId: "cus_northwind", userId: "usr_yusuf", name: "Yusuf", locale: "ar" },
+  "lucas@lumen.test": { customerId: "cus_lumen", userId: "usr_lucas", name: "Lucas", locale: "fr" },
 };
 
 export async function setup(options: Partial<SupportOptions> = {}, channels?: Channel[]) {
@@ -136,8 +136,8 @@ export async function setup(options: Partial<SupportOptions> = {}, channels?: Ch
       },
       async listAgents() {
         return [
-          { id: "agent_a", name: "Ahmed Salem" },
-          { id: "agent_k", name: "Khadija" },
+          { id: "agent_a", name: "Daniel Kim" },
+          { id: "agent_k", name: "Priya" },
         ];
       },
     },
@@ -170,10 +170,10 @@ export function inbound(partial: Partial<Omit<InboundMessage, "from">> & { from?
   return {
     providerMessageId: `in-${seq}`,
     rfcMessageId: `<in-${seq}@mail.test>`,
-    from: { address: from ?? "mariem@nour.test", name: "Mariem" },
+    from: { address: from ?? "emma@northwind.test", name: "Emma" },
     to: [{ address: "support@acme.test" }],
     subject: "Payout not received",
-    text: "Salam, we haven't received last week's payout.",
+    text: "Hi, we haven't received last week's payout.",
     receivedAt: new Date("2026-11-03T09:00:00Z"),
     ...rest,
   };

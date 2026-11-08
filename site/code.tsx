@@ -11,7 +11,7 @@ export async function Code({
 }: {
   code: string;
   title?: string;
-  lang?: "tsx" | "ts" | "bash" | "json";
+  lang?: "tsx" | "ts" | "bash" | "json" | "css";
   className?: string;
 }) {
   const html = await codeToHtml(code, {

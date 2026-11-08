@@ -4,7 +4,7 @@
   "title": "Microsoft 365 channel",
   "description": "A Microsoft 365 or Exchange Online mailbox through Microsoft Graph.",
   "registryDependencies": [
-    "@tendkit/channel-utils"
+    "https://tendkit.softwaresavants.dev/r/channel-utils.json"
   ],
   "files": [
     {

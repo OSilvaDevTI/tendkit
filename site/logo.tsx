@@ -1,13 +1,14 @@
-/** Tendkit's mark: a speech bubble with a check, in the brand color. */
+/**
+ * Tendkit's mark: a speech bubble with a check cut out. One color (currentColor), like shadcn's own
+ * mark, so it sits in any theme. The same shape is Tendkit's logo in the shadcn registry directory.
+ */
 export function Logo({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden className={className}>
-      <rect width="24" height="24" rx="6" className="fill-primary" />
+    <svg viewBox="0 0 96 96" aria-hidden className={className} fill="currentColor">
       <path
-        d="M7 7.5h10a1.5 1.5 0 0 1 1.5 1.5v5.5A1.5 1.5 0 0 1 17 16h-5.2L9 18.3V16H7a1.5 1.5 0 0 1-1.5-1.5V9A1.5 1.5 0 0 1 7 7.5Z"
-        className="fill-primary-foreground"
+        fillRule="evenodd"
+        d="M24 16H72A12 12 0 0 1 84 28V58A12 12 0 0 1 72 70H46L28 84V70H24A12 12 0 0 1 12 58V28A12 12 0 0 1 24 16ZM31 43L37 37L44 44L59 29L65 35L44 56Z"
       />
-      <path d="m9.6 11.6 1.6 1.6 3.3-3.3" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="stroke-primary" />
     </svg>
   );
 }

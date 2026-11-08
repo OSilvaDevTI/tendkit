@@ -11,7 +11,7 @@ export interface Channel {
   kind: "email" | "sms" | "whatsapp" | "telegram" | "api";
   /** How senders on this channel are identified. */
   identityKind: IdentityKind;
-  /** What customers write to, for display: "support@acme.com", "+222 22 10 15 55". */
+  /** What customers write to, for display: "support@acme.com", "+1 415 555 0133". */
   address: string;
   capabilities: ChannelCapabilities;
   /**

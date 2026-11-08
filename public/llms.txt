@@ -22,7 +22,16 @@ Registry items: support (core), support-postgres, support-d1, support-ui, channe
 
 ## Docs
 
-- [Get started](https://tendkit.softwaresavants.dev/docs): install, schema, service, directory, webhooks, screens
-- [Channels](https://tendkit.softwaresavants.dev/docs/channels): every adapter and its options
+- [Introduction](https://tendkit.softwaresavants.dev/docs)
+- [Installation](https://tendkit.softwaresavants.dev/docs/installation): registry entry, items, tables, monorepos
+- [The service](https://tendkit.softwaresavants.dev/docs/service): createSupport options, storage, notifications, methods, errors
+- [Your directory](https://tendkit.softwaresavants.dev/docs/directory): identify, searchCustomers, getCustomers, listAgents, trust
+- [Webhooks and scheduling](https://tendkit.softwaresavants.dev/docs/webhooks): the route, responses, runScheduled
+- [Inbox and tickets](https://tendkit.softwaresavants.dev/docs/screens): SupportClient, SupportProvider props, translations
+- [Customer portal](https://tendkit.softwaresavants.dev/docs/portal)
+- [Theming](https://tendkit.softwaresavants.dev/docs/theming)
+- [Email setup](https://tendkit.softwaresavants.dev/docs/email): receiving domains, threading, trimming, automatic mail, authentication
+- [Channels](https://tendkit.softwaresavants.dev/docs/channels): resend, microsoft365, gmail, smtp, twilio, whatsapp, telegram, api, and writing your own (/docs/channels/<name>)
+- [Upgrading](https://tendkit.softwaresavants.dev/docs/upgrading)
 - [Live demo](https://tendkit.softwaresavants.dev/demo)
 - [Source](https://github.com/SoftwareSavants/tendkit)

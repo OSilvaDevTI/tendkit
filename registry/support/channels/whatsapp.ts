@@ -21,7 +21,7 @@ export type WhatsAppChannelOptions = {
   appSecret: string;
   /** Any string you choose; Meta echoes it back when you register the webhook. */
   verifyToken: string;
-  /** The number customers write to, for display: "+222 20 00 00 00". */
+  /** The number customers write to, for display: "+1 415 555 0100". */
   displayNumber: string;
   apiVersion?: string;
   fetch?: typeof fetch;

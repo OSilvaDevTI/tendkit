@@ -4,7 +4,7 @@
   "title": "Telegram channel",
   "description": "A Telegram bot.",
   "registryDependencies": [
-    "@tendkit/channel-utils"
+    "https://tendkit.softwaresavants.dev/r/channel-utils.json"
   ],
   "files": [
     {

@@ -11,7 +11,7 @@ const base = {
   accessToken: "token",
   appSecret: "app-secret",
   verifyToken: "verify-me",
-  displayNumber: "+222 20 00 00 00",
+  displayNumber: "+1 415 555 0100",
 };
 
 function post(payload: unknown, sign = true) {
@@ -32,7 +32,7 @@ const change = (value: Record<string, unknown>, phoneNumberId = "1111") => ({
       changes: [
         {
           field: "messages",
-          value: { messaging_product: "whatsapp", metadata: { display_phone_number: "22220000000", phone_number_id: phoneNumberId }, ...value },
+          value: { messaging_product: "whatsapp", metadata: { display_phone_number: "14155550100", phone_number_id: phoneNumberId }, ...value },
         },
       ],
     },
@@ -76,23 +76,23 @@ describe("whatsapp webhook", () => {
       return new Response("unexpected", { status: 500 });
     });
     const channel = whatsappChannel({ ...base, fetch });
-    const contacts = [{ profile: { name: "Mariem" }, wa_id: "22222101555", user_id: "MR.1" }];
+    const contacts = [{ profile: { name: "Emma" }, wa_id: "14155550133", user_id: "US.1" }];
     const { events } = await channel.webhook!(
       post(
         change({
           contacts,
           messages: [
-            { from: "22222101555", from_user_id: "MR.1", id: "wamid.A", timestamp: "1762160400", type: "text", text: { body: "Salam" } },
+            { from: "14155550133", from_user_id: "US.1", id: "wamid.A", timestamp: "1762160400", type: "text", text: { body: "Hello" } },
             {
-              from: "22222101555",
+              from: "14155550133",
               id: "wamid.B",
               timestamp: "1762160460",
               type: "image",
               image: { caption: "My receipt", mime_type: "image/jpeg", sha256: "x", id: "media-1" },
             },
-            { from: "22222101555", id: "wamid.C", timestamp: "1762160470", type: "reaction", reaction: { message_id: "wamid.A", emoji: "👍" } },
+            { from: "14155550133", id: "wamid.C", timestamp: "1762160470", type: "reaction", reaction: { message_id: "wamid.A", emoji: "👍" } },
             {
-              from: "22222101555",
+              from: "14155550133",
               id: "wamid.D",
               timestamp: "1762160480",
               type: "interactive",
@@ -103,13 +103,13 @@ describe("whatsapp webhook", () => {
       )
     );
     expect(events.map((e) => (e.type === "message" ? [e.message.providerMessageId, e.message.text] : null))).toEqual([
-      ["wamid.A", "Salam"],
+      ["wamid.A", "Hello"],
       ["wamid.B", "My receipt"],
       ["wamid.D", "Yes, resend it"],
     ]);
     const image = events[1]!;
     if (image.type !== "message") throw new Error("expected a message");
-    expect(image.message.from).toEqual({ address: "+22222101555", name: "Mariem" });
+    expect(image.message.from).toEqual({ address: "+14155550133", name: "Emma" });
     expect(image.message.receivedAt).toEqual(new Date(1762160460_000));
     const [file] = image.message.attachments!;
     expect(file).toMatchObject({ filename: "image.jpg", contentType: "image/jpeg" });
@@ -130,7 +130,7 @@ describe("whatsapp webhook", () => {
       post(
         change({
           statuses: [
-            { id: "wamid.OUT", status: "delivered", timestamp: "1762160400", recipient_id: "22222101555" },
+            { id: "wamid.OUT", status: "delivered", timestamp: "1762160400", recipient_id: "14155550133" },
             {
               id: "wamid.OUT2",
               status: "failed",
@@ -160,12 +160,12 @@ describe("whatsapp send", () => {
     const { fetch, calls } = mockFetch((url) =>
       url.endsWith("/1111/media")
         ? json({ id: "upload-1" })
-        : json({ messaging_product: "whatsapp", contacts: [{ input: "+22222101555", wa_id: "22222101555" }], messages: [{ id: `wamid.OUT${++n}` }] })
+        : json({ messaging_product: "whatsapp", contacts: [{ input: "+14155550133", wa_id: "14155550133" }], messages: [{ id: `wamid.OUT${++n}` }] })
     );
     const channel = whatsappChannel({ ...base, fetch });
     const result = await channel.send({
       id: "msg_1",
-      to: [{ address: "+222 22 10 15 55" }],
+      to: [{ address: "+1 415 555 0133" }],
       text: "Here is your statement.",
       replyToProviderMessageId: "wamid.A",
       attachments: [{ filename: "statement.pdf", contentType: "application/pdf", content: new Uint8Array([1]) }],
@@ -182,7 +182,7 @@ describe("whatsapp send", () => {
     expect(JSON.parse(String(calls[1]!.init.body))).toEqual({
       messaging_product: "whatsapp",
       recipient_type: "individual",
-      to: "+22222101555",
+      to: "+14155550133",
       biz_opaque_callback_data: "msg_1",
       context: { message_id: "wamid.A" },
       type: "text",
@@ -209,7 +209,7 @@ describe("whatsapp send", () => {
       )
     );
     const channel = whatsappChannel({ ...base, fetch });
-    const error = await channel.send({ id: "m", to: [{ address: "+22222101555" }], text: "Hello?" }).catch((e) => e);
+    const error = await channel.send({ id: "m", to: [{ address: "+14155550133" }], text: "Hello?" }).catch((e) => e);
     expect(error).toBeInstanceOf(ChannelError);
     expect(error.message).toContain("24-hour WhatsApp reply window has closed");
     expect(error.retryable).toBe(false);

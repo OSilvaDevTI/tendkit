@@ -78,11 +78,11 @@ describe("resend webhook", () => {
 
   it("loads a received email with its threading headers and lazy attachments", async () => {
     const raw = [
-      "Received: from mx.nour.test",
-      "From: =?UTF-8?B?TWFyaWVt?= <mariem@nour.test>",
-      "Message-ID: <in-2@nour.test>",
+      "Received: from mx.northwind.test",
+      "From: =?UTF-8?B?TWFyaWVt?= <emma@northwind.test>",
+      "Message-ID: <in-2@northwind.test>",
       "In-Reply-To: <out-1@acme.test>",
-      "References: <in-1@nour.test>",
+      "References: <in-1@northwind.test>",
       "\t<out-1@acme.test>",
       "Auto-Submitted: no",
       "",
@@ -94,14 +94,14 @@ describe("resend webhook", () => {
           json({
             id: "rcv_1",
             created_at: "2026-11-07 09:30:00.123+00",
-            from: "mariem@nour.test",
+            from: "emma@northwind.test",
             to: ["Acme Support <support+t-abcdefghij12@in.acme.test>"],
-            cc: ["sidi@nour.test"],
+            cc: ["yusuf@northwind.test"],
             subject: "Re: Payout",
             text: "Thanks!",
             html: "<p>Thanks!</p>",
-            headers: { From: "Mariem Mint Ahmed <mariem@nour.test>", "X-Mailer": "Mail" },
-            message_id: "<in-2@nour.test>",
+            headers: { From: "Emma Clarke <emma@northwind.test>", "X-Mailer": "Mail" },
+            message_id: "<in-2@northwind.test>",
             raw: { download_url: "https://cdn.test/raw/rcv_1", expires_at: "2026-11-07T10:30:00Z" },
             attachments: [
               { id: "att_1", filename: "receipt.pdf", content_type: "application/pdf", content_disposition: "attachment", content_id: null, size: 3 },
@@ -119,31 +119,31 @@ describe("resend webhook", () => {
       await signed({
         type: "email.received",
         created_at: "2026-11-07T09:30:01Z",
-        data: { email_id: "rcv_1", from: "mariem@nour.test", to: ["support+t-abcdefghij12@in.acme.test"], cc: [], bcc: [] },
+        data: { email_id: "rcv_1", from: "emma@northwind.test", to: ["support+t-abcdefghij12@in.acme.test"], cc: [], bcc: [] },
       })
     );
     const message = (events[0] as Extract<ChannelEvent, { type: "message" }>).message;
     const { attachments, ...rest } = message;
     expect(rest).toEqual<Omit<InboundMessage, "attachments">>({
       providerMessageId: "rcv_1",
-      from: { address: "mariem@nour.test", name: "Mariem Mint Ahmed" },
+      from: { address: "emma@northwind.test", name: "Emma Clarke" },
       to: [{ address: "support+t-abcdefghij12@in.acme.test", name: "Acme Support" }],
-      cc: [{ address: "sidi@nour.test", name: null }],
+      cc: [{ address: "yusuf@northwind.test", name: null }],
       subject: "Re: Payout",
       text: "Thanks!",
       html: "<p>Thanks!</p>",
       headers: {
-        received: "from mx.nour.test",
-        from: "Mariem Mint Ahmed <mariem@nour.test>",
-        "message-id": "<in-2@nour.test>",
+        received: "from mx.northwind.test",
+        from: "Emma Clarke <emma@northwind.test>",
+        "message-id": "<in-2@northwind.test>",
         "in-reply-to": "<out-1@acme.test>",
-        references: "<in-1@nour.test> <out-1@acme.test>",
+        references: "<in-1@northwind.test> <out-1@acme.test>",
         "auto-submitted": "no",
         "x-mailer": "Mail",
       },
-      rfcMessageId: "<in-2@nour.test>",
+      rfcMessageId: "<in-2@northwind.test>",
       inReplyTo: "<out-1@acme.test>",
-      references: ["<in-1@nour.test>", "<out-1@acme.test>"],
+      references: ["<in-1@northwind.test>", "<out-1@acme.test>"],
       receivedAt: new Date("2026-11-07T09:30:00.123Z"),
     });
     expect(attachments!.map(({ read, ...a }) => a)).toEqual([
@@ -178,16 +178,16 @@ describe("resend send", () => {
     });
     const result = await ch.send({
       id: "msg_123",
-      to: [{ address: "mariem@nour.test", name: "Mariem, Nour" }],
-      cc: [{ address: "sidi@nour.test" }],
+      to: [{ address: "emma@northwind.test", name: "Emma, Northwind" }],
+      cc: [{ address: "yusuf@northwind.test" }],
       fromName: "Acme Support",
       replyTo: { address: "support+t-abcdefghij12@in.acme.test" },
       subject: "Re: Payout",
       text: "Sent today.",
       html: "<p>Sent today.</p>",
       attachments: [{ filename: "receipt.pdf", contentType: "application/pdf", content: utf8("pdf") }],
-      inReplyTo: "<in-2@nour.test>",
-      references: ["<in-1@nour.test>", "<in-2@nour.test>"],
+      inReplyTo: "<in-2@northwind.test>",
+      references: ["<in-1@northwind.test>", "<in-2@northwind.test>"],
       headers: { "Auto-Submitted": "auto-replied" },
     });
     expect(result).toEqual({ providerMessageId: "em_9", rfcMessageId: "<em_9@email.amazonses.com>", status: "sent" });
@@ -202,8 +202,8 @@ describe("resend send", () => {
     });
     expect(JSON.parse(post.body!)).toEqual({
       from: "Acme Support <support@acme.test>",
-      to: ['"Mariem, Nour" <mariem@nour.test>'],
-      cc: ["sidi@nour.test"],
+      to: ['"Emma, Northwind" <emma@northwind.test>'],
+      cc: ["yusuf@northwind.test"],
       reply_to: "support+t-abcdefghij12@in.acme.test",
       subject: "Re: Payout",
       text: "Sent today.",
@@ -211,8 +211,8 @@ describe("resend send", () => {
       attachments: [{ filename: "receipt.pdf", content: "cGRm", content_type: "application/pdf" }],
       headers: {
         "Auto-Submitted": "auto-replied",
-        "In-Reply-To": "<in-2@nour.test>",
-        References: "<in-1@nour.test> <in-2@nour.test>",
+        "In-Reply-To": "<in-2@northwind.test>",
+        References: "<in-1@northwind.test> <in-2@northwind.test>",
       },
     });
   });

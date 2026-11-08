@@ -5,41 +5,41 @@ import { htmlToText, signatureFromHtml, visibleReply, withoutSignature } from ".
 const outlookWebHtml = `<html><head><style>p{margin:0}</style></head><body dir="ltr">
 <div class="elementToProof" style="font-family: Aptos, sans-serif;">Got it, thanks! This answer should land back in the same ticket.</div>
 <div class="elementToProof"><br></div>
-<div id="Signature" class="elementToProof"><div><p>Ahmed Salem</p><p>Support lead, <b>Acme</b></p></div></div>
+<div id="Signature" class="elementToProof"><div><p>Daniel Kim</p><p>Support lead, <b>Acme</b></p></div></div>
 <div id="appendonsend"></div>
 <hr style="display:inline-block;width:98%" tabindex="-1">
-<div id="divRplyFwdMsg" dir="ltr"><b>From:</b> Acme Support &lt;support@acme.test&gt;<br><b>Sent:</b> Sunday, November 8, 2026 4:33 PM<br><b>To:</b> Ahmed Salem<br><b>Subject:</b> Re: Test</div>
+<div id="divRplyFwdMsg" dir="ltr"><b>From:</b> Acme Support &lt;support@acme.test&gt;<br><b>Sent:</b> Sunday, November 8, 2026 4:33 PM<br><b>To:</b> Daniel Kim<br><b>Subject:</b> Re: Test</div>
 <div>Confirmed, the support inbox works.</div></body></html>`;
 
 /** The plain-text part Outlook sends alongside it. */
 const outlookWebText = `Got it, thanks! This answer should land back in the same ticket.
 
-Ahmed Salem
+Daniel Kim
 
 Support lead, Acme
 
 ________________________________
 From: Acme Support <support@acme.test>
 Sent: Sunday, November 8, 2026 4:33 PM
-To: Ahmed Salem
+To: Daniel Kim
 Subject: Re: Test
 
 Confirmed, the support inbox works.`;
 
 describe("visibleReply", () => {
   it("drops the separator line Outlook puts above the quoted header", () => {
-    expect(visibleReply(outlookWebText)).toBe("Got it, thanks! This answer should land back in the same ticket.\n\nAhmed Salem\n\nSupport lead, Acme");
+    expect(visibleReply(outlookWebText)).toBe("Got it, thanks! This answer should land back in the same ticket.\n\nDaniel Kim\n\nSupport lead, Acme");
   });
 
   it("keeps separator lines that are part of what the person wrote", () => {
-    expect(visibleReply("Totals\n-----\n12 MRU")).toBe("Totals\n-----\n12 MRU");
+    expect(visibleReply("Totals\n-----\n$12")).toBe("Totals\n-----\n$12");
   });
 });
 
 describe("signatures", () => {
   it("finds the Outlook signature and removes it from the reply", () => {
     const signature = signatureFromHtml(outlookWebHtml);
-    expect(signature).toBe("Ahmed Salem\nSupport lead, Acme");
+    expect(signature).toBe("Daniel Kim\nSupport lead, Acme");
     expect(withoutSignature(visibleReply(outlookWebText), signature)).toBe(
       "Got it, thanks! This answer should land back in the same ticket."
     );
@@ -48,23 +48,23 @@ describe("signatures", () => {
   it("finds Gmail and Outlook mobile signatures", () => {
     expect(
       signatureFromHtml(
-        `<div dir="ltr">Merci</div><br><span class="gmail_signature_prefix">-- </span><br><div dir="ltr" class="gmail_signature" data-smartmail="gmail_signature"><div>Mariem Sidi</div><div>Boutique Nour</div></div>`
+        `<div dir="ltr">Merci</div><br><span class="gmail_signature_prefix">-- </span><br><div dir="ltr" class="gmail_signature" data-smartmail="gmail_signature"><div>Emma Clarke</div><div>Northwind Coffee</div></div>`
       )
-    ).toBe("Mariem Sidi\nBoutique Nour");
+    ).toBe("Emma Clarke\nNorthwind Coffee");
     expect(signatureFromHtml(`<div>شكرا</div><div id="ms-outlook-mobile-signature"><div>Get Outlook for iOS</div></div>`)).toBe(
       "Get Outlook for iOS"
     );
   });
 
   it("only removes the signature from the end, ignoring spacing differences", () => {
-    expect(withoutSignature("Call me back\n\n  Mariem   Sidi\n\nBoutique Nour  ", "Mariem Sidi\nBoutique Nour")).toBe("Call me back");
-    expect(withoutSignature("Mariem Sidi here. Boutique Nour needs help.", "Mariem Sidi\nBoutique Nour")).toBe(
-      "Mariem Sidi here. Boutique Nour needs help."
+    expect(withoutSignature("Call me back\n\n  Emma   Clarke\n\nNorthwind Coffee  ", "Emma Clarke\nNorthwind Coffee")).toBe("Call me back");
+    expect(withoutSignature("Emma Clarke here. Northwind Coffee needs help.", "Emma Clarke\nNorthwind Coffee")).toBe(
+      "Emma Clarke here. Northwind Coffee needs help."
     );
   });
 
   it("keeps the message when it is nothing but the signature", () => {
-    expect(withoutSignature("Mariem Sidi\nBoutique Nour", "Mariem Sidi\nBoutique Nour")).toBe("Mariem Sidi\nBoutique Nour");
+    expect(withoutSignature("Emma Clarke\nNorthwind Coffee", "Emma Clarke\nNorthwind Coffee")).toBe("Emma Clarke\nNorthwind Coffee");
   });
 
   it("ignores a signature nested inside the quoted message", () => {

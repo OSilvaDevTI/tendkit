@@ -14,24 +14,24 @@ describe("smtp channel", () => {
     });
     const result = await channel.send({
       id: "msg_1",
-      to: [{ address: "mariem@nour.test" }],
-      cc: [{ address: "boss@nour.test" }],
+      to: [{ address: "emma@northwind.test" }],
+      cc: [{ address: "boss@northwind.test" }],
       fromName: "Acme Support",
       subject: "Re: Payout",
       text: "Done.",
-      inReplyTo: "<a@nour.test>",
-      references: ["<a@nour.test>"],
+      inReplyTo: "<a@northwind.test>",
+      references: ["<a@northwind.test>"],
       attachments: [{ filename: "receipt.pdf", contentType: "application/pdf", content: utf8("%PDF-1.4") }],
       headers: { "Auto-Submitted": "auto-replied" },
     });
 
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.envelope).toEqual({ from: "support@acme.test", to: ["mariem@nour.test", "boss@nour.test"] });
+    expect(calls[0]!.envelope).toEqual({ from: "support@acme.test", to: ["emma@northwind.test", "boss@northwind.test"] });
     const sent = await parseRawEmail(calls[0]!.raw);
     expect(sent).toMatchObject({
       from: { address: "support@acme.test", name: "Acme Support" },
-      cc: [{ address: "boss@nour.test" }],
-      inReplyTo: "<a@nour.test>",
+      cc: [{ address: "boss@northwind.test" }],
+      inReplyTo: "<a@northwind.test>",
       headers: { "auto-submitted": "auto-replied" },
     });
     expect(sent.attachments?.[0]?.filename).toBe("receipt.pdf");
@@ -51,7 +51,7 @@ describe("smtp channel", () => {
           seen.push(state);
           return {
             messages: [
-              { uid: "41", raw: raw("mariem@nour.test", "<a@nour.test>"), receivedAt: new Date("2026-11-07T08:00:00Z") },
+              { uid: "41", raw: raw("emma@northwind.test", "<a@northwind.test>"), receivedAt: new Date("2026-11-07T08:00:00Z") },
               { uid: "42", raw: raw("support@acme.test", "<b@acme.test>") },
             ],
             state: { uidValidity: 7, nextUid: 43 },
@@ -63,7 +63,7 @@ describe("smtp channel", () => {
     expect(seen).toEqual([{ uidValidity: 7, nextUid: 41 }]);
     expect(result.state).toEqual({ uidValidity: 7, nextUid: 43 });
     expect(result.events.map((e) => e.type === "message" && e.message)).toMatchObject([
-      { providerMessageId: "7:41", rfcMessageId: "<a@nour.test>", receivedAt: new Date("2026-11-07T08:00:00Z") },
+      { providerMessageId: "7:41", rfcMessageId: "<a@northwind.test>", receivedAt: new Date("2026-11-07T08:00:00Z") },
       { providerMessageId: "7:42", direction: "outbound" },
     ]);
     expect(result.events[0]!.type === "message" && result.events[0]!.message.direction).toBeUndefined();

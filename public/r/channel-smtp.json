@@ -4,8 +4,8 @@
   "title": "SMTP and IMAP channel",
   "description": "Any mailbox over SMTP and IMAP, with transports you provide.",
   "registryDependencies": [
-    "@tendkit/channel-utils",
-    "@tendkit/channel-mime"
+    "https://tendkit.softwaresavants.dev/r/channel-utils.json",
+    "https://tendkit.softwaresavants.dev/r/channel-mime.json"
   ],
   "files": [
     {

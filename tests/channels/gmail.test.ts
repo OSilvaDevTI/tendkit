@@ -90,7 +90,7 @@ describe("gmail sync", () => {
         threadId: "t1",
         labelIds: ["INBOX"],
         internalDate: "1793000000000",
-        raw: base64UrlEncode(utf8(rawMail("mariem@nour.test", "Payout", "<a@nour.test>"))),
+        raw: base64UrlEncode(utf8(rawMail("emma@northwind.test", "Payout", "<a@northwind.test>"))),
       }),
       "GET /messages/m2": () => ({
         id: "m2",
@@ -112,7 +112,7 @@ describe("gmail sync", () => {
     const second = await channel.sync!(first.state);
     expect(second.state.historyId).toBe("110");
     expect(second.events.map((e) => e.type === "message" && e.message)).toMatchObject([
-      { providerMessageId: "m1", providerThreadId: "t1", direction: "inbound", rfcMessageId: "<a@nour.test>", from: { address: "mariem@nour.test" }, receivedAt: new Date(1793000000000) },
+      { providerMessageId: "m1", providerThreadId: "t1", direction: "inbound", rfcMessageId: "<a@northwind.test>", from: { address: "emma@northwind.test" }, receivedAt: new Date(1793000000000) },
       { providerMessageId: "m2", providerThreadId: "t1", direction: "outbound", rfcMessageId: "<b@acme.test>", subject: "Re: Payout" },
     ]);
     expect(g.requests.some((r) => r.url.includes("/messages/d1"))).toBe(false);
@@ -151,14 +151,14 @@ describe("gmail send", () => {
     const channel = gmailChannel({ id: "gmail", mailbox: "support@acme.test", auth: { oauth: { clientId: "c", clientSecret: "s", refreshToken: "r" } }, fetch: g.fetch });
     const result = await channel.send({
       id: "msg_1",
-      to: [{ address: "mariem@nour.test", name: "مريم" }],
+      to: [{ address: "emma@northwind.test", name: "مريم" }],
       fromName: "Acme Support",
       replyTo: { address: "support+t-abc@in.acme.test" },
       subject: "Re: الدفع",
       text: "تم.",
       html: "<p>تم.</p>",
-      inReplyTo: "<a@nour.test>",
-      references: ["<a@nour.test>"],
+      inReplyTo: "<a@northwind.test>",
+      references: ["<a@northwind.test>"],
       providerThreadId: "t1",
     });
     expect(result).toEqual({ providerMessageId: "g-out", providerThreadId: "t1", rfcMessageId: "<kept@acme.test>", status: "sent" });
@@ -168,10 +168,10 @@ describe("gmail send", () => {
     const mime = await parseRawEmail(base64Decode(sentBody!.raw));
     expect(mime).toMatchObject({
       from: { address: "support@acme.test", name: "Acme Support" },
-      to: [{ address: "mariem@nour.test", name: "مريم" }],
+      to: [{ address: "emma@northwind.test", name: "مريم" }],
       subject: "Re: الدفع",
-      inReplyTo: "<a@nour.test>",
-      references: ["<a@nour.test>"],
+      inReplyTo: "<a@northwind.test>",
+      references: ["<a@northwind.test>"],
     });
     expect(mime.text?.trim()).toBe("تم.");
     const token = g.requests.find((r) => r.url.includes("oauth2.googleapis.com/token"))!;

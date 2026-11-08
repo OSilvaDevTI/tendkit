@@ -7,7 +7,7 @@
     "drizzle-orm@^0.45"
   ],
   "registryDependencies": [
-    "@tendkit/support"
+    "https://tendkit.softwaresavants.dev/r/support.json"
   ],
   "files": [
     {

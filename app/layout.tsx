@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Figtree, Geist, Geist_Mono } from "next/font/google";
-import { SiteFooter, SiteHeader } from "@/site/header";
 import { SITE_URL } from "@/site/config";
 import { themeScript } from "@/site/theme-config";
 import "./globals.css";
@@ -30,11 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="flex min-h-svh flex-col font-sans">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
-      </body>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }
