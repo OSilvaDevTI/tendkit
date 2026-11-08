@@ -101,7 +101,27 @@ export function ThemePicker({ className }: { className?: string }) {
   );
 }
 
-/** Light, dark or follow the system. Also used in the header. */
+/** One button that flips light and dark, like shadcn's header. */
+export function ModeToggle() {
+  const { mode } = useTheme();
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const dark = document.documentElement.classList.contains("dark");
+        setTheme({ mode: dark ? "light" : "dark" });
+      }}
+      aria-label="Toggle dark mode"
+      data-mode={mode}
+      className="grid size-8 place-items-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Sun className="size-4 dark:hidden" />
+      <Moon className="hidden size-4 dark:block" />
+    </button>
+  );
+}
+
+/** Light, dark or follow the system. */
 export function ModeSwitch() {
   const { mode } = useTheme();
   const icons = { light: Sun, dark: Moon, system: Monitor } as const;

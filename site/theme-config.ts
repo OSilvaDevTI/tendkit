@@ -1,8 +1,8 @@
 /** Theme presets, shared by the picker (client) and the pre-paint script (layout). */
 
 export const COLORS = [
-  { id: "green", label: "Green", swatch: "oklch(0.55 0.11 168)" },
   { id: "neutral", label: "Neutral", swatch: "oklch(0.25 0 0)" },
+  { id: "green", label: "Green", swatch: "oklch(0.55 0.11 168)" },
   { id: "blue", label: "Blue", swatch: "oklch(0.55 0.19 258)" },
   { id: "violet", label: "Violet", swatch: "oklch(0.55 0.21 292)" },
   { id: "rose", label: "Rose", swatch: "oklch(0.6 0.2 12)" },
@@ -23,7 +23,7 @@ export type Theme = {
   mode: (typeof MODES)[number];
 };
 
-export const DEFAULT_THEME: Theme = { color: "green", radius: "0.625", font: "geist", mode: "system" };
+export const DEFAULT_THEME: Theme = { color: "neutral", radius: "0.625", font: "geist", mode: "system" };
 export const KEY = "tendkit-theme";
 
 /** Runs before paint (inlined in the layout) so there's no flash of the default theme. */

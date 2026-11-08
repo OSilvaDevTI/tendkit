@@ -8,12 +8,13 @@
  * real support screens with it. Presets below mirror the knobs a shadcn/ui app already has.
  */
 :root {
-  --hue: 168;
-  --tint: 0.008;
-  --p-l: 0.47;
-  --p-c: 0.1;
-  --pd-l: 0.74;
-  --pd-c: 0.12;
+  /* Neutral by default, like shadcn/ui; presets add color. */
+  --hue: 260;
+  --tint: 0;
+  --p-l: 0.21;
+  --p-c: 0;
+  --pd-l: 0.93;
+  --pd-c: 0;
   --radius: 0.625rem;
   --font-current: var(--font-geist-sans);
 
@@ -56,7 +57,7 @@
 }
 
 /* Theme presets: set by the theme picker on <html>. */
-[data-color="neutral"] { --hue: 260; --tint: 0; --p-l: 0.21; --p-c: 0; --pd-l: 0.93; --pd-c: 0; }
+[data-color="green"] { --hue: 168; --tint: 0.008; --p-l: 0.47; --p-c: 0.1; --pd-l: 0.74; --pd-c: 0.12; }
 [data-color="blue"] { --hue: 258; --p-l: 0.52; --p-c: 0.19; --pd-l: 0.72; --pd-c: 0.14; }
 [data-color="violet"] { --hue: 292; --p-l: 0.52; --p-c: 0.21; --pd-l: 0.74; --pd-c: 0.15; }
 [data-color="rose"] { --hue: 12; --p-l: 0.57; --p-c: 0.2; --pd-l: 0.74; --pd-c: 0.15; }

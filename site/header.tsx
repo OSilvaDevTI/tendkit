@@ -1,32 +1,37 @@
 import Link from "next/link";
 import { GITHUB_URL } from "./config";
 import { Logo } from "./logo";
-import { ModeSwitch } from "./theme";
+import { ModeToggle } from "./theme";
+
+const NAV = [
+  { href: "/docs", label: "Docs" },
+  { href: "/docs/channels", label: "Channels" },
+  { href: "/demo", label: "Demo" },
+];
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight" aria-label="Tendkit home">
-          <Logo className="size-6" />
+    <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-sm">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:px-6">
+        <Link href="/" className="flex items-center gap-2 text-sm font-semibold" aria-label="Tendkit home">
+          <Logo className="size-5" />
           Tendkit
         </Link>
-        <nav className="flex flex-1 items-center gap-5 text-sm text-muted-foreground">
-          <Link href="/demo" className="hover:text-foreground">
-            Demo
-          </Link>
-          <Link href="/docs" className="hover:text-foreground">
-            Docs
-          </Link>
+        <nav className="flex flex-1 items-center gap-4 text-sm text-muted-foreground">
+          {NAV.map((item) => (
+            <Link key={item.href} href={item.href} className="hover:text-foreground">
+              {item.label}
+            </Link>
+          ))}
         </nav>
-        <ModeSwitch />
         <a
           href={GITHUB_URL}
-          className="inline-flex h-8 items-center gap-2 rounded-md border px-3 text-sm font-medium hover:bg-accent"
+          aria-label="Tendkit on GitHub"
+          className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <GitHubMark className="size-4" />
-          <span className="hidden sm:inline">GitHub</span>
         </a>
+        <ModeToggle />
       </div>
     </header>
   );
@@ -34,30 +39,18 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p>
-          MIT licensed. Built by{" "}
-          <a href="https://software-savants.com" className="underline-offset-4 hover:text-foreground hover:underline">
-            Software Savants
-          </a>
-          .
-        </p>
-        <nav className="flex gap-5">
-          <Link href="/docs" className="hover:text-foreground">
-            Docs
-          </Link>
-          <Link href="/docs/channels" className="hover:text-foreground">
-            Channels
-          </Link>
-          <a href={GITHUB_URL} className="hover:text-foreground">
-            GitHub
-          </a>
-          <a href="/llms.txt" className="hover:text-foreground">
-            llms.txt
-          </a>
-        </nav>
-      </div>
+    <footer>
+      <p className="mx-auto max-w-7xl px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
+        Built by{" "}
+        <a href="https://software-savants.com" className="font-medium underline underline-offset-4">
+          Software Savants
+        </a>
+        . The source code is available on{" "}
+        <a href={GITHUB_URL} className="font-medium underline underline-offset-4">
+          GitHub
+        </a>
+        .
+      </p>
     </footer>
   );
 }
