@@ -246,7 +246,7 @@ function failureReason(reason: string | undefined): string {
 async function resendError(res: Response, action: string): Promise<ChannelError> {
   let body: { name?: string; message?: string } = {};
   try {
-    body = await res.json();
+    body = (await res.json()) as typeof body;
   } catch {
     // Not JSON; the status says enough.
   }

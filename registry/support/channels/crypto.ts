@@ -32,13 +32,13 @@ export const utf8 = (value: string) => encoder.encode(value);
 
 async function hmacKey(secret: Uint8Array | string, hash: "SHA-1" | "SHA-256", usage: "sign" | "verify") {
   const raw = typeof secret === "string" ? utf8(secret) : secret;
-  return crypto.subtle.importKey("raw", raw as BufferSource, { name: "HMAC", hash }, false, [usage]);
+  return crypto.subtle.importKey("raw", raw as unknown as ArrayBuffer, { name: "HMAC", hash }, false, [usage]);
 }
 
 export async function hmac(secret: Uint8Array | string, data: Uint8Array | string, hash: "SHA-1" | "SHA-256" = "SHA-256") {
   const key = await hmacKey(secret, hash, "sign");
   const body = typeof data === "string" ? utf8(data) : data;
-  return new Uint8Array(await crypto.subtle.sign("HMAC", key, body as BufferSource));
+  return new Uint8Array(await crypto.subtle.sign("HMAC", key, body as unknown as ArrayBuffer));
 }
 
 /** Constant-time check that `signature` is the HMAC of `data`. */
@@ -50,7 +50,7 @@ export async function verifyHmac(
 ): Promise<boolean> {
   const key = await hmacKey(secret, hash, "verify");
   const body = typeof data === "string" ? utf8(data) : data;
-  return crypto.subtle.verify("HMAC", key, signature as BufferSource, body as BufferSource);
+  return crypto.subtle.verify("HMAC", key, signature as unknown as ArrayBuffer, body as unknown as ArrayBuffer);
 }
 
 /** Webhook timestamps outside this window are rejected as replays. */

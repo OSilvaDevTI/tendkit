@@ -337,15 +337,15 @@ export async function serviceAccountAssertion(
   nowSeconds = Math.floor(Date.now() / 1000)
 ): Promise<string> {
   const der = base64Decode(account.privateKey.replace(/-----[^-]+-----/g, ""));
-  const key = await crypto.subtle.importKey("pkcs8", der as BufferSource, RS256, false, ["sign"]);
+  const key = await crypto.subtle.importKey("pkcs8", der as unknown as ArrayBuffer, RS256, false, ["sign"]);
   const header = { alg: "RS256", typ: "JWT", ...(account.privateKeyId ? { kid: account.privateKeyId } : {}) };
   const claims = { iss: account.clientEmail, sub: subject, scope: SCOPE, aud: TOKEN_URL, iat: nowSeconds, exp: nowSeconds + 3600 };
   const input = `${base64UrlEncode(utf8(JSON.stringify(header)))}.${base64UrlEncode(utf8(JSON.stringify(claims)))}`;
-  const signature = new Uint8Array(await crypto.subtle.sign(RS256, key, utf8(input) as BufferSource));
+  const signature = new Uint8Array(await crypto.subtle.sign(RS256, key, utf8(input) as unknown as ArrayBuffer));
   return `${input}.${base64UrlEncode(signature)}`;
 }
 
-type Jwks = { keys: (JsonWebKey & { kid?: string })[] };
+type Jwks = { keys: (Parameters<typeof crypto.subtle.importKey>[1] & { kid?: string })[] };
 let certs: { jwks: Jwks; expiresAt: number; fetchedAt: number } | null = null;
 
 async function googleCerts(f: typeof fetch, refresh: boolean): Promise<Jwks> {
@@ -384,7 +384,7 @@ export async function verifyPubSubToken(
   jwk ??= (await googleCerts(f, true)).keys.find((k) => k.kid === header.kid);
   if (!jwk) return false;
   const key = await crypto.subtle.importKey("jwk", { ...jwk, alg: "RS256" }, RS256, false, ["verify"]);
-  const valid = await crypto.subtle.verify(RS256, key, base64Decode(s) as BufferSource, utf8(`${h}.${c}`) as BufferSource);
+  const valid = await crypto.subtle.verify(RS256, key, base64Decode(s) as unknown as ArrayBuffer, utf8(`${h}.${c}`) as unknown as ArrayBuffer);
   const now = expected.nowSeconds ?? Math.floor(Date.now() / 1000);
   return (
     valid &&

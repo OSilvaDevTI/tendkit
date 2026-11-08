@@ -122,7 +122,7 @@ export function telegramChannel(options: TelegramChannelOptions): Channel {
       for (const a of message.attachments ?? []) {
         const form = new FormData();
         form.set("chat_id", chatId);
-        form.set("document", new Blob([a.content as BlobPart], { type: a.contentType }), a.filename);
+        form.set("document", new Blob([a.content as unknown as ArrayBuffer], { type: a.contentType }), a.filename);
         sent.push(await call("sendDocument", form));
       }
       if (!sent[0]) throw new ChannelError("Nothing to send", false);

@@ -254,6 +254,14 @@ export function createSupport(options: SupportOptions) {
       (ids.length ? await store.findTicketByRfcMessageIds(ids) : null) ??
       (msg.providerThreadId ? await store.findTicketByProviderThread(ch.id, msg.providerThreadId) : null);
     if (!ticket) return { result: "ignored" as const };
+    // A reply sent from here can show up in the mailbox's Sent folder before its send finished
+    // recording; the shared Message-ID tells us it's the same message.
+    if (msg.rfcMessageId) {
+      const existing = await store.listMessages(ticket.id, { includeNotes: false });
+      if (existing.some((m) => m.kind === "outbound" && m.rfcMessageId === msg.rfcMessageId)) {
+        return { result: "duplicate" as const };
+      }
+    }
     const text = msg.text ?? (msg.html ? htmlToText(msg.html) : "");
     const at = msg.receivedAt;
     const inserted = await store.insertMessage({

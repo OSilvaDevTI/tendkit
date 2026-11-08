@@ -208,7 +208,7 @@ export function whatsappChannel(options: WhatsAppChannelOptions): Channel {
     const form = new FormData();
     form.set("messaging_product", "whatsapp");
     form.set("type", file.contentType);
-    form.set("file", new Blob([file.content as BlobPart], { type: file.contentType }), file.filename);
+    form.set("file", new Blob([file.content as unknown as ArrayBuffer], { type: file.contentType }), file.filename);
     const { id } = await graphCall<{ id: string }>(`${options.phoneNumberId}/media`, { method: "POST", body: form });
     return { id, type, filename: file.filename };
   }

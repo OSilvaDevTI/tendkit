@@ -450,7 +450,7 @@ export function microsoft365Channel(options: Microsoft365ChannelOptions): Channe
             "content-type": "application/octet-stream",
             "content-range": `bytes ${offset}-${offset + chunk.byteLength - 1}/${size}`,
           },
-          body: chunk as BodyInit,
+          body: chunk as unknown as ArrayBuffer,
         },
         "attachment upload"
       );

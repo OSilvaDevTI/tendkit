@@ -52,7 +52,7 @@ describe("resend webhook", () => {
   it("accepts a valid Svix signature and rejects tampered or stale requests", async () => {
     const { ch } = channel();
     expect((await ch.webhook!(await signed(delivered))).events).toEqual([
-      { type: "status", providerMessageId: "em_1", status: "delivered", error: null, at: new Date("2026-11-07T10:00:00.000Z") },
+      { type: "status", providerMessageId: "em_1", status: "delivered", error: null, rfcMessageId: null, at: new Date("2026-11-07T10:00:00.000Z") },
     ]);
     await expect(ch.webhook!(await signed(delivered, { tamper: true }))).rejects.toBeInstanceOf(WebhookError);
     const stale = Math.floor(Date.now() / 1000) - 600;

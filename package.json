@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json",
     "registry:build": "shadcn build"
   },
   "devDependencies": {

@@ -91,7 +91,7 @@ function headerSection(bytes: Uint8Array): Uint8Array {
 }
 
 async function sha256Hex(bytes: Uint8Array) {
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes as BufferSource));
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes as unknown as ArrayBuffer));
   return Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
