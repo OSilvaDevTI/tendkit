@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "tendkit",
-  "homepage": "https://github.com/SoftwareSavants/tendkit",
+  "homepage": "https://tendkit.softwaresavants.dev",
   "items": [
     {
       "name": "support",
