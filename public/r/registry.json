@@ -1,0 +1,312 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "tendkit",
+  "homepage": "https://github.com/SoftwareSavants/tendkit",
+  "items": [
+    {
+      "name": "support",
+      "type": "registry:item",
+      "title": "Support core",
+      "description": "Tickets, threading, auto-reply detection and the service your API calls. No framework or database code.",
+      "files": [
+        {
+          "path": "registry/support/types.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/types.ts"
+        },
+        {
+          "path": "registry/support/channel.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channel.ts"
+        },
+        {
+          "path": "registry/support/store.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/store.ts"
+        },
+        {
+          "path": "registry/support/address.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/address.ts"
+        },
+        {
+          "path": "registry/support/text.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/text.ts"
+        },
+        {
+          "path": "registry/support/service.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/service.ts"
+        }
+      ]
+    },
+    {
+      "name": "support-postgres",
+      "type": "registry:item",
+      "title": "Postgres store",
+      "description": "Drizzle schema, a starting migration and the store for Postgres (Supabase, Neon, RDS, PGlite\u2026).",
+      "dependencies": [
+        "drizzle-orm@^0.45"
+      ],
+      "registryDependencies": [
+        "@tendkit/support"
+      ],
+      "files": [
+        {
+          "path": "registry/support/postgres/schema.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/postgres/schema.ts"
+        },
+        {
+          "path": "registry/support/postgres/store.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/postgres/store.ts"
+        },
+        {
+          "path": "registry/support/postgres/migrations/0000_init.sql",
+          "type": "registry:file",
+          "target": "~/lib/support/postgres/0000_init.sql"
+        }
+      ]
+    },
+    {
+      "name": "channel-utils",
+      "type": "registry:item",
+      "title": "Channel helpers",
+      "description": "WebCrypto signature checks shared by channel adapters.",
+      "registryDependencies": [
+        "@tendkit/support"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/crypto.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/crypto.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-mime",
+      "type": "registry:item",
+      "title": "MIME parser and builder",
+      "description": "Raw email parsing (postal-mime) and RFC-compliant building, for Gmail and SMTP.",
+      "dependencies": [
+        "postal-mime@^4.2"
+      ],
+      "registryDependencies": [
+        "@tendkit/channel-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/mime.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/mime.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-resend",
+      "type": "registry:item",
+      "title": "Resend channel",
+      "description": "Email in and out through Resend: inbound webhooks, replies, delivery events.",
+      "registryDependencies": [
+        "@tendkit/channel-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/resend.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/resend.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-microsoft365",
+      "type": "registry:item",
+      "title": "Microsoft 365 channel",
+      "description": "A Microsoft 365 or Exchange Online mailbox through Microsoft Graph.",
+      "registryDependencies": [
+        "@tendkit/channel-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/microsoft365.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/microsoft365.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-gmail",
+      "type": "registry:item",
+      "title": "Gmail channel",
+      "description": "A Gmail or Google Workspace mailbox through the Gmail API.",
+      "registryDependencies": [
+        "@tendkit/channel-utils",
+        "@tendkit/channel-mime"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/gmail.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/gmail.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-smtp",
+      "type": "registry:item",
+      "title": "SMTP and IMAP channel",
+      "description": "Any mailbox over SMTP and IMAP, with transports you provide.",
+      "registryDependencies": [
+        "@tendkit/channel-utils",
+        "@tendkit/channel-mime"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/smtp.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/smtp.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-twilio",
+      "type": "registry:item",
+      "title": "Twilio channel",
+      "description": "SMS and WhatsApp through Twilio Programmable Messaging.",
+      "registryDependencies": [
+        "@tendkit/channel-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/twilio.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/twilio.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-whatsapp",
+      "type": "registry:item",
+      "title": "WhatsApp channel",
+      "description": "WhatsApp Business Cloud API, directly with Meta.",
+      "registryDependencies": [
+        "@tendkit/channel-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/whatsapp.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/whatsapp.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-telegram",
+      "type": "registry:item",
+      "title": "Telegram channel",
+      "description": "A Telegram bot.",
+      "registryDependencies": [
+        "@tendkit/channel-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/telegram.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/telegram.ts"
+        }
+      ]
+    },
+    {
+      "name": "channel-api",
+      "type": "registry:item",
+      "title": "API channel",
+      "description": "Signed HTTP requests from your own forms and backends.",
+      "registryDependencies": [
+        "@tendkit/channel-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/support/channels/api.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/channels/api.ts"
+        }
+      ]
+    },
+    {
+      "name": "support-ui",
+      "type": "registry:item",
+      "title": "Support screens",
+      "description": "Inbox, ticket, composer and customer portal screens built on your shadcn components.",
+      "dependencies": [
+        "@tanstack/react-query@^5",
+        "dompurify@^3",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "badge",
+        "input",
+        "textarea",
+        "select",
+        "dialog",
+        "dropdown-menu",
+        "skeleton"
+      ],
+      "files": [
+        {
+          "path": "registry/support-ui/client.ts",
+          "type": "registry:file",
+          "target": "~/components/support/client.ts"
+        },
+        {
+          "path": "registry/support-ui/provider.tsx",
+          "type": "registry:file",
+          "target": "~/components/support/provider.tsx"
+        },
+        {
+          "path": "registry/support-ui/format.ts",
+          "type": "registry:file",
+          "target": "~/components/support/format.ts"
+        },
+        {
+          "path": "registry/support-ui/parts.tsx",
+          "type": "registry:file",
+          "target": "~/components/support/parts.tsx"
+        },
+        {
+          "path": "registry/support-ui/support-inbox.tsx",
+          "type": "registry:file",
+          "target": "~/components/support/support-inbox.tsx"
+        },
+        {
+          "path": "registry/support-ui/support-ticket.tsx",
+          "type": "registry:file",
+          "target": "~/components/support/support-ticket.tsx"
+        },
+        {
+          "path": "registry/support-ui/support-composer.tsx",
+          "type": "registry:file",
+          "target": "~/components/support/support-composer.tsx"
+        },
+        {
+          "path": "registry/support-ui/link-customer-dialog.tsx",
+          "type": "registry:file",
+          "target": "~/components/support/link-customer-dialog.tsx"
+        },
+        {
+          "path": "registry/support-ui/support-requests.tsx",
+          "type": "registry:file",
+          "target": "~/components/support/support-requests.tsx"
+        },
+        {
+          "path": "registry/support-ui/messages/en.json",
+          "type": "registry:file",
+          "target": "~/components/support/messages/en.json"
+        }
+      ]
+    }
+  ]
+}
