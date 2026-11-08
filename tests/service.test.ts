@@ -63,6 +63,13 @@ describe("inbound email", () => {
     });
   });
 
+  it("drops mail from addresses it was told to ignore", async () => {
+    const t = await setup({ ignoreFrom: ["NoReply@acme.test"] });
+    expect(await t.support.ingest("email", message(t, { from: "noreply@acme.test" }))).toMatchObject({ result: "ignored" });
+    const { total } = await t.support.listTickets({ sort: "recent", limit: 10, offset: 0 }, "agent_a");
+    expect(total).toBe(0);
+  });
+
   it("keeps only what the customer wrote this time", async () => {
     const t = await setup();
     const { ticketId } = (await t.support.ingest(

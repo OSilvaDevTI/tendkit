@@ -67,6 +67,11 @@ export type SupportOptions = {
   signature?: (agent: Agent) => string;
   /** The display name replies are sent as, such as "Acme Support". */
   fromName?: string;
+  /**
+   * Senders whose mail never becomes a ticket, such as the no-reply address your app sends team
+   * alerts from. Without this, an alert sent to a mailbox that copies into the inbox opens a ticket.
+   */
+  ignoreFrom?: string[];
   /** The channel that tickets opened from your own app (a portal, a contact form) reply on. */
   portalChannelId?: string;
   /** Days after solving during which a customer reply reopens the ticket. Later replies start a new one. */
@@ -142,9 +147,10 @@ export function createSupport(options: SupportOptions) {
   const ownAddresses = new Set(
     options.channels.flatMap((c) => [c.address, c.replyAddress].filter(Boolean).map((a) => a!.toLowerCase()))
   );
+  const ignored = new Set((options.ignoreFrom ?? []).map((a) => a.toLowerCase()));
   const isOwnAddress = (address: string) => {
     const lower = address.toLowerCase();
-    if (ownAddresses.has(lower)) return true;
+    if (ownAddresses.has(lower) || ignored.has(lower)) return true;
     // support+t-token@in.acme.com is ours too.
     return [...ownAddresses].some((own) => {
       const [local, domain] = own.split("@");
