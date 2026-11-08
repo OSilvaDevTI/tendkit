@@ -101,6 +101,11 @@ export type InboundMessage = {
   providerThreadId?: string | null;
   receivedAt: Date;
   attachments?: InboundAttachment[];
+  /**
+   * "api" for messages your app creates itself (a contact form). They become tickets like any
+   * other, but never get the automatic acknowledgement: your form already confirms.
+   */
+  source?: "channel" | "api";
 };
 
 export type OutboundAttachment = { filename: string; contentType: string; content: Uint8Array };

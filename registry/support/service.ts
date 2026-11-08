@@ -373,7 +373,7 @@ export function createSupport(options: SupportOptions) {
           deliveryStatus: null,
           deliveryError: null,
           auto: Boolean(automated),
-          source: "channel",
+          source: msg.source ?? "channel",
           createdAt: at,
         });
         if (!message) throw new Duplicate();
@@ -411,7 +411,7 @@ export function createSupport(options: SupportOptions) {
         message,
         contact,
       });
-      if (outcome.created && ch.kind === "email") await sendAcknowledgement(ch, outcome.ticket, contact, message);
+      if (outcome.created && ch.kind === "email" && msg.source !== "api") await sendAcknowledgement(ch, outcome.ticket, contact, message);
     }
     return { result: outcome.created ? ("created" as const) : ("appended" as const), ticketId: outcome.ticket.id };
   }

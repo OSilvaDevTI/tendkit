@@ -164,7 +164,7 @@ function TicketControls({ detail, agents }: { detail: TicketDetail; agents: Agen
               {t("ticket.notSpam")}
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem variant="destructive" onSelect={() => setStatus.mutate("spam")}>
+            <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setStatus.mutate("spam")}>
               <Ban className="size-4" />
               {t("ticket.markSpam")}
             </DropdownMenuItem>
