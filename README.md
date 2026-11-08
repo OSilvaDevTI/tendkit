@@ -14,6 +14,7 @@ Customer support you own. Tendkit is a shared inbox, tickets and a customer port
 |---|---|
 | `support` | The core: ticket model, threading, auto-reply detection, the service your API calls (`lib/support`) |
 | `support-postgres` | Drizzle schema, a starting migration and the store for Postgres |
+| `support-d1` | The same for SQLite and Cloudflare D1 (no transactions needed) |
 | `support-ui` | Inbox, ticket, composer and customer-portal screens (`components/support`) |
 | `channel-resend`, `channel-microsoft365`, `channel-gmail`, `channel-smtp`, `channel-twilio`, `channel-whatsapp`, `channel-telegram`, `channel-api` | One adapter each |
 

@@ -71,6 +71,35 @@
       ]
     },
     {
+      "name": "support-d1",
+      "type": "registry:item",
+      "title": "SQLite / Cloudflare D1 store",
+      "description": "Drizzle schema, a starting migration and the store for SQLite and Cloudflare D1, with no transactions needed.",
+      "dependencies": [
+        "drizzle-orm@^0.45"
+      ],
+      "registryDependencies": [
+        "@tendkit/support"
+      ],
+      "files": [
+        {
+          "path": "registry/support/d1/schema.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/d1/schema.ts"
+        },
+        {
+          "path": "registry/support/d1/store.ts",
+          "type": "registry:file",
+          "target": "~/lib/support/d1/store.ts"
+        },
+        {
+          "path": "registry/support/d1/migrations/0000_init.sql",
+          "type": "registry:file",
+          "target": "~/lib/support/d1/0000_init.sql"
+        }
+      ]
+    },
+    {
       "name": "channel-utils",
       "type": "registry:item",
       "title": "Channel helpers",

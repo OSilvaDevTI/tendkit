@@ -1,11 +1,43 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
+import { DatabaseSync } from "node:sqlite";
+import { drizzle as drizzleProxy } from "drizzle-orm/sqlite-proxy";
 import { createPostgresStore } from "../registry/support/postgres/store";
+import { createD1Store } from "../registry/support/d1/store";
 import { createSupport, type AttachmentStorage, type SupportNotification, type SupportOptions } from "../registry/support/service";
 import type { Channel, ChannelCapabilities, InboundMessage, OutboundMessage, SendResult } from "../registry/support/channel";
 
 const migrationsDir = new URL("../registry/support/postgres/migrations/", import.meta.url);
+const d1MigrationsDir = new URL("../registry/support/d1/migrations/", import.meta.url);
+
+/** TENDKIT_STORE=d1 runs the suite against SQLite (the D1 store) instead of Postgres. */
+export const storeKind = process.env.TENDKIT_STORE === "d1" ? "d1" : "postgres";
+
+/** A fresh SQLite database through Drizzle's proxy driver, behaving like D1 (async, foreign keys on). */
+export function createSqliteDb() {
+  const sqlite = new DatabaseSync(":memory:");
+  sqlite.exec("PRAGMA foreign_keys = ON");
+  for (const file of readdirSync(d1MigrationsDir).filter((f) => f.endsWith(".sql")).sort()) {
+    const sql = readFileSync(new URL(file, d1MigrationsDir), "utf8");
+    for (const statement of sql.split("--> statement-breakpoint")) if (statement.trim()) sqlite.exec(statement);
+  }
+  return drizzleProxy(async (query, params, method) => {
+    const statement = sqlite.prepare(query);
+    const args = params as (string | number | null | bigint | Uint8Array)[];
+    if (method === "run") {
+      statement.run(...args);
+      return { rows: [] };
+    }
+    statement.setReturnArrays(true);
+    if (method === "get") return { rows: (statement.get(...args) as unknown as unknown[] | undefined) ?? [] };
+    return { rows: statement.all(...args) as unknown as unknown[][] };
+  });
+}
+
+export async function createTestStore() {
+  return storeKind === "d1" ? createD1Store(createSqliteDb()) : createPostgresStore(await createTestDb());
+}
 
 let template: Promise<PGlite> | undefined;
 
@@ -83,8 +115,7 @@ export const people: Record<string, { customerId: string; userId: string; name: 
 };
 
 export async function setup(options: Partial<SupportOptions> = {}, channels?: Channel[]) {
-  const db = await createTestDb();
-  const store = createPostgresStore(db);
+  const store = await createTestStore();
   const storage = memoryStorage();
   const email = fakeChannel();
   const notifications: SupportNotification[] = [];

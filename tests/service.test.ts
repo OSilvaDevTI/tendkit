@@ -21,6 +21,15 @@ describe("inbound email", () => {
     expect(t.notifications.map((n) => n.type)).toEqual(["ticket.created"]);
   });
 
+  it("keeps one ticket when the same email is delivered twice at once", async () => {
+    const t = await setup({ acknowledgement: undefined });
+    const event = message(t);
+    const results = await Promise.all([t.support.ingest("email", event), t.support.ingest("email", event)]);
+    expect(results.map((r) => r.result).sort()).toEqual(["created", "duplicate"]);
+    const { total } = await t.support.listTickets({ sort: "recent", limit: 10, offset: 0 }, "agent_a");
+    expect(total).toBe(1);
+  });
+
   it("acknowledges known customers only, with auto-reply headers", async () => {
     const t = await setup();
     await t.support.ingest("email", message(t));
