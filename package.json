@@ -9,7 +9,7 @@
     "registry:build": "shadcn build",
     "dev": "next dev",
     "build": "next build",
-    "deploy": "next build && wrangler deploy"
+    "deploy:site": "next build && wrangler deploy"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.15",
