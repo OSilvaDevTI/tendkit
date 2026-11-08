@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { GITHUB_URL } from "./config";
 import { Logo } from "./logo";
+import { ModeSwitch } from "./theme";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
+    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-sm">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight" aria-label="Tendkit home">
           <Logo className="size-6" />
           Tendkit
@@ -18,6 +19,7 @@ export function SiteHeader() {
             Docs
           </Link>
         </nav>
+        <ModeSwitch />
         <a
           href={GITHUB_URL}
           className="inline-flex h-8 items-center gap-2 rounded-md border px-3 text-sm font-medium hover:bg-accent"

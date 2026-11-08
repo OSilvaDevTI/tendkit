@@ -16,6 +16,15 @@ export default function GetStarted() {
   return (
     <DocsPage
       current="/docs"
+      toc={[
+        { id: "install", title: "Install" },
+        { id: "database", title: "Add the tables" },
+        { id: "service", title: "Create the service" },
+        { id: "directory", title: "Who people are" },
+        { id: "webhooks", title: "Webhooks and schedule" },
+        { id: "screens", title: "Mount the screens" },
+        { id: "upgrading", title: "Upstream fixes" },
+      ]}
       title="Add a support inbox to your app"
       lead="Tendkit targets Next.js (App Router), Tailwind 4, shadcn/ui, TanStack Query and Drizzle. Other stacks work by editing the copied code, which is yours."
     >
@@ -26,6 +35,7 @@ export default function GetStarted() {
         </p>
         <Code
           title="Terminal"
+          lang="bash"
           code={`npx shadcn@latest add \\
   ${R}/support.json \\
   ${R}/support-postgres.json \\
@@ -44,7 +54,7 @@ export default function GetStarted() {
           <code>0000_init.sql</code> is the reference. For D1 there are no transactions: the store removes what it
           created if a later write fails.
         </p>
-        <Code title="db/schema/index.ts" code={`export * from "@/lib/support/postgres/schema";`} />
+        <Code title="db/schema/index.ts" lang="ts" code={`export * from "@/lib/support/postgres/schema";`} />
       </Step>
 
       <Step id="service" title="3. Create the service">

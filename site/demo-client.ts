@@ -227,6 +227,7 @@ const FOLLOW_UPS = [
 
 /** A support client backed by browser memory. `onChange` fires when the customer writes back. */
 export function createDemoClient(onChange: () => void): SupportClient {
+  ids = 0; // the same ticket ids every time, so links like ?ticket=tkt_1 are stable
   const s = seed();
   const delay = <T,>(value: T) => new Promise<T>((resolve) => setTimeout(() => resolve(value), 120));
   const ticket = (id: string) => {

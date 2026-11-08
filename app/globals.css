@@ -3,52 +3,72 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Every color comes from one hue (--hue) so a theme preset can restyle the whole site, and the
+ * real support screens with it. Presets below mirror the knobs a shadcn/ui app already has.
+ */
 :root {
+  --hue: 168;
+  --tint: 0.008;
+  --p-l: 0.47;
+  --p-c: 0.1;
+  --pd-l: 0.74;
+  --pd-c: 0.12;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.17 0.01 170);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.17 0.01 170);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.17 0.01 170);
-  --primary: oklch(0.47 0.1 168);
-  --primary-foreground: oklch(0.99 0.01 168);
-  --secondary: oklch(0.965 0.006 168);
-  --secondary-foreground: oklch(0.22 0.02 170);
-  --muted: oklch(0.965 0.006 168);
-  --muted-foreground: oklch(0.5 0.015 170);
-  --accent: oklch(0.955 0.012 168);
-  --accent-foreground: oklch(0.22 0.02 170);
+  --font-current: var(--font-geist-sans);
+
+  --background: oklch(0.995 calc(var(--tint) * 0.4) var(--hue));
+  --foreground: oklch(0.17 calc(var(--tint) * 1.5) var(--hue));
+  --card: oklch(0.998 calc(var(--tint) * 0.3) var(--hue));
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(var(--p-l) var(--p-c) var(--hue));
+  --primary-foreground: oklch(0.985 calc(var(--tint) * 1.2) var(--hue));
+  --secondary: oklch(0.965 var(--tint) var(--hue));
+  --secondary-foreground: oklch(0.22 calc(var(--tint) * 2) var(--hue));
+  --muted: oklch(0.966 var(--tint) var(--hue));
+  --muted-foreground: oklch(0.5 calc(var(--tint) * 2) var(--hue));
+  --accent: oklch(0.955 calc(var(--tint) * 1.6) var(--hue));
+  --accent-foreground: oklch(0.22 calc(var(--tint) * 2) var(--hue));
   --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.915 0.008 168);
-  --input: oklch(0.915 0.008 168);
-  --ring: oklch(0.6 0.09 168);
-  --brand-night: oklch(0.2 0.03 175);
+  --border: oklch(0.915 var(--tint) var(--hue));
+  --input: oklch(0.905 var(--tint) var(--hue));
+  --ring: oklch(var(--p-l) var(--p-c) var(--hue) / 55%);
 }
 
 .dark {
-  --background: oklch(0.16 0.012 175);
-  --foreground: oklch(0.96 0.005 168);
-  --card: oklch(0.2 0.014 175);
-  --card-foreground: oklch(0.96 0.005 168);
-  --popover: oklch(0.2 0.014 175);
-  --popover-foreground: oklch(0.96 0.005 168);
-  --primary: oklch(0.72 0.12 168);
-  --primary-foreground: oklch(0.18 0.03 175);
-  --secondary: oklch(0.25 0.015 175);
-  --secondary-foreground: oklch(0.96 0.005 168);
-  --muted: oklch(0.25 0.015 175);
-  --muted-foreground: oklch(0.7 0.015 170);
-  --accent: oklch(0.27 0.02 175);
-  --accent-foreground: oklch(0.96 0.005 168);
-  --destructive: oklch(0.65 0.2 25);
-  --border: oklch(1 0 0 / 11%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.09 168);
+  --background: oklch(0.155 calc(var(--tint) * 1.4) var(--hue));
+  --foreground: oklch(0.965 calc(var(--tint) * 0.6) var(--hue));
+  --card: oklch(0.19 calc(var(--tint) * 1.6) var(--hue));
+  --secondary: oklch(0.245 calc(var(--tint) * 1.8) var(--hue));
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.235 calc(var(--tint) * 1.8) var(--hue));
+  --muted-foreground: oklch(0.71 calc(var(--tint) * 1.6) var(--hue));
+  --accent: oklch(0.26 calc(var(--tint) * 2) var(--hue));
+  --accent-foreground: var(--foreground);
+  --primary: oklch(var(--pd-l) var(--pd-c) var(--hue));
+  --primary-foreground: oklch(0.17 calc(var(--tint) * 3) var(--hue));
+  --destructive: oklch(0.66 0.2 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(var(--pd-l) var(--pd-c) var(--hue) / 55%);
 }
 
+/* Theme presets: set by the theme picker on <html>. */
+[data-color="neutral"] { --hue: 260; --tint: 0; --p-l: 0.21; --p-c: 0; --pd-l: 0.93; --pd-c: 0; }
+[data-color="blue"] { --hue: 258; --p-l: 0.52; --p-c: 0.19; --pd-l: 0.72; --pd-c: 0.14; }
+[data-color="violet"] { --hue: 292; --p-l: 0.52; --p-c: 0.21; --pd-l: 0.74; --pd-c: 0.15; }
+[data-color="rose"] { --hue: 12; --p-l: 0.57; --p-c: 0.2; --pd-l: 0.74; --pd-c: 0.15; }
+[data-color="amber"] { --hue: 62; --p-l: 0.6; --p-c: 0.15; --pd-l: 0.8; --pd-c: 0.15; }
+[data-radius="0"] { --radius: 0rem; }
+[data-radius="0.3"] { --radius: 0.3rem; }
+[data-radius="1"] { --radius: 1rem; }
+[data-font="figtree"] { --font-current: var(--font-figtree); }
+[data-font="bricolage"] { --font-current: var(--font-bricolage); }
+
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-current);
   --font-mono: var(--font-geist-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -82,6 +102,9 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+  /* Theme changes ease in instead of flashing. */
+  body, body * { transition-property: background-color, border-color, color, fill, border-radius; transition-duration: 0ms; }
+  html.theme-transition body, html.theme-transition body * { transition-duration: 220ms; transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
 }
 
 /* Hero loop: an email becomes a ticket, the reply lands back in the customer's thread. */
@@ -91,3 +114,8 @@
 .hero-in { animation: hero-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .hero-row-in { animation: hero-row-in 500ms ease-out both; }
 .hero-row-out { animation: hero-row-out 500ms ease-out both; }
+
+/* Highlighted code (shiki, light and dark from one render). */
+.shiki { background: transparent !important; }
+.shiki span { color: var(--shiki-light); }
+.dark .shiki span { color: var(--shiki-dark); }

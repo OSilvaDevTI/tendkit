@@ -6,10 +6,22 @@ const PAGES = [
 ];
 
 /** Docs chrome: a short nav and readable prose. */
-export function DocsPage({ current, title, lead, children }: { current: string; title: string; lead: string; children: React.ReactNode }) {
+export function DocsPage({
+  current,
+  title,
+  lead,
+  toc,
+  children,
+}: {
+  current: string;
+  title: string;
+  lead: string;
+  toc: { id: string; title: string }[];
+  children: React.ReactNode;
+}) {
   return (
-    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[12rem_minmax(0,1fr)]">
-      <nav className="flex gap-4 text-sm lg:flex-col lg:gap-2">
+    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[11rem_minmax(0,1fr)] xl:grid-cols-[11rem_minmax(0,1fr)_11rem]">
+      <nav className="flex gap-4 text-sm lg:sticky lg:top-24 lg:flex-col lg:gap-2 lg:self-start" aria-label="Docs">
         {PAGES.map((p) => (
           <Link
             key={p.href}
@@ -21,10 +33,22 @@ export function DocsPage({ current, title, lead, children }: { current: string; 
         ))}
       </nav>
       <article className="min-w-0 max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-        <p className="mt-3 text-lg text-muted-foreground">{lead}</p>
-        <div className="mt-10 space-y-12">{children}</div>
+        <h1 className="text-[clamp(1.9rem,3vw,2.4rem)] leading-tight font-semibold tracking-[-0.03em] text-balance">{title}</h1>
+        <p className="mt-4 text-lg leading-relaxed text-pretty text-muted-foreground">{lead}</p>
+        <div className="mt-12 space-y-14">{children}</div>
       </article>
+      <nav className="hidden text-sm xl:sticky xl:top-24 xl:block xl:self-start" aria-label="On this page">
+        <p className="font-medium">On this page</p>
+        <ul className="mt-3 space-y-2">
+          {toc.map((item) => (
+            <li key={item.id}>
+              <a href={`#${item.id}`} className="text-muted-foreground hover:text-foreground">
+                {item.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   );
 }

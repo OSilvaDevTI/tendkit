@@ -27,14 +27,18 @@ export default function Channels() {
   return (
     <DocsPage
       current="/docs/channels"
+      toc={[
+        ...CHANNELS.map((c) => ({ id: c.item.replace("channel-", ""), title: c.name })),
+        { id: "write-your-own", title: "Write your own" },
+      ]}
       title="Channels"
       lead="Each adapter is one file that translates a provider's webhooks and API into tickets and replies. Use several at once; each gets its own id and webhook route."
     >
       {CHANNELS.map((c) => (
         <Step key={c.item} id={c.item.replace("channel-", "")} title={`${c.name} · ${c.kind}`}>
           <p>{c.how}</p>
-          <Code title="Terminal" code={`npx shadcn@latest add ${REGISTRY_URL}/${c.item}.json`} />
-          <Code title="lib/support/index.ts" code={EXAMPLES[c.item]!} />
+          <Code title="Terminal" lang="bash" code={`npx shadcn@latest add ${REGISTRY_URL}/${c.item}.json`} />
+          <Code title="lib/support/index.ts" lang="ts" code={EXAMPLES[c.item]!} />
         </Step>
       ))}
       <Step id="write-your-own" title="Write your own">
