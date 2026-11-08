@@ -27,7 +27,14 @@ export function SupportComposer({ detail }: { detail: TicketDetail }) {
   const limits = detail.channel?.capabilities;
   const maxLength = mode === "reply" ? limits?.maxTextLength ?? null : null;
   const attachmentsAllowed = mode === "note" || Boolean(limits?.attachments);
-  const recipient = contactLabel(detail.contact);
+  // Replies go to whoever wrote last, which can be a colleague of the original contact.
+  const lastInbound = [...detail.timeline]
+    .reverse()
+    .find((e) => e.type === "message" && e.message.kind === "inbound" && e.message.source === "channel");
+  const recipient =
+    lastInbound?.type === "message" && lastInbound.message.from
+      ? lastInbound.message.from.name || lastInbound.message.from.address
+      : contactLabel(detail.contact);
 
   const send = useMutation({
     mutationFn: (status: "waiting" | "solved" | null) => {

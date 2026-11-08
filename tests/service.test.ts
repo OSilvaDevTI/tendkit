@@ -302,3 +302,44 @@ describe("customer portal", () => {
     );
   });
 });
+
+describe("untrusted senders", () => {
+  it("never files a contact-form message under the customer whose email was typed", async () => {
+    const t = await setup();
+    const { ticketId } = (await t.support.ingest("email", message(t, { source: "api" }))) as { ticketId: string };
+    expect((await t.support.getTicket(ticketId, "agent_a")).customer).toBeNull();
+    expect(t.email.sent).toEqual([]);
+    expect((await t.support.portal.list({ customerId: "cus_nour", readerId: "usr_mariem" })).items).toEqual([]);
+  });
+
+  it("treats mail that failed DMARC as an unknown sender that can't thread by headers", async () => {
+    const t = await setup();
+    const real = inbound({ receivedAt: t.now() });
+    const { ticketId } = (await t.support.ingest("email", { type: "message", message: real })) as { ticketId: string };
+    t.email.sent.length = 0;
+    const spoofed = await t.support.ingest(
+      "email",
+      message(t, { inReplyTo: real.rfcMessageId, headers: { "authentication-results": "mx.test; spf=fail; dkim=none; dmarc=fail" } })
+    );
+    expect((spoofed as { ticketId: string }).ticketId).not.toBe(ticketId);
+    expect((await t.support.getTicket((spoofed as { ticketId: string }).ticketId, "agent_a")).customer).toBeNull();
+    expect(t.email.sent).toEqual([]);
+  });
+
+  it("doesn't block a real customer's address when a ticket in their name is marked as spam", async () => {
+    const t = await setup({ acknowledgement: undefined });
+    const { ticketId } = (await t.support.ingest("email", message(t, { source: "api" }))) as { ticketId: string };
+    await t.support.setStatus({ ticketId, status: "spam", actorId: "agent_a" });
+    // The contact form didn't link the contact, so the real customer's next email links and arrives.
+    expect(await t.support.ingest("email", message(t, { subject: "Real question" }))).toMatchObject({ result: "created" });
+  });
+
+  it("leaves the ticket as it was when a reply couldn't be sent", async () => {
+    const down = fakeChannel({ fail: true });
+    const t = await setup({ acknowledgement: undefined }, [down.channel]);
+    const { ticketId } = (await t.support.ingest("email", message(t))) as { ticketId: string };
+    const { ticket } = await t.support.reply({ ticketId, agentId: "agent_a", text: "Hi", status: "solved" });
+    expect(ticket.status).toBe("open");
+    expect(ticket.waitingSince).not.toBeNull();
+  });
+});

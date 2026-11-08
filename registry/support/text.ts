@@ -140,3 +140,17 @@ export function textToHtml(text: string): string {
     );
   return `<div dir="auto" style="font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:14px;line-height:1.6;color:#111">${paragraphs.join("")}</div>`;
 }
+
+/**
+ * True when the receiving server recorded that the sender failed authentication: DMARC failed,
+ * or neither SPF nor DKIM passed. Such mail still becomes a ticket, but it isn't linked to the
+ * customer it claims to come from and gets no automatic reply.
+ */
+export function senderFailedAuthentication(headers: Record<string, string> | undefined): boolean {
+  const results = headers?.["authentication-results"]?.toLowerCase();
+  if (!results) return false;
+  if (/\bdmarc=fail\b/.test(results)) return true;
+  const spfFailed = /\bspf=(fail|softfail)\b/.test(results);
+  const dkimFailed = /\bdkim=(fail|none)\b/.test(results) && !/\bdkim=pass\b/.test(results);
+  return spfFailed && dkimFailed;
+}

@@ -7,7 +7,7 @@ import {
   type OutboundAttachment,
 } from "./channel";
 import { addressWithToken, baseSubject, normalizeIdentity, replySubject, tokenFromAddress } from "./address";
-import { automatedReason, htmlToText, snippet, textToHtml, visibleReply } from "./text";
+import { automatedReason, senderFailedAuthentication, htmlToText, snippet, textToHtml, visibleReply } from "./text";
 import type { SupportStore, TicketQuery } from "./store";
 import type {
   Address,
@@ -164,15 +164,25 @@ export function createSupport(options: SupportOptions) {
 
   // ---------------------------------------------------------------- inbound
 
-  async function resolveContact(identity: Identity, name: string | null | undefined): Promise<Contact> {
+  /**
+   * Finds or creates the person behind an identity. Only `trusted` messages (the sender is
+   * authenticated) may link them to an account: a contact form or a spoofed From must never file
+   * a ticket under a real customer.
+   */
+  async function resolveContact(identity: Identity, name: string | null | undefined, trusted: boolean): Promise<Contact> {
     const existing = await store.findContactByIdentity(identity);
-    if (existing && existing.customerId) return existing;
+    if (!trusted) {
+      return existing ?? store.createContact({ name: name?.trim() || null, customerId: null, userId: null, locale: null, identities: [identity] });
+    }
+    // People without an account keep the customer an agent linked them to. Account holders are
+    // looked up again, so someone who moved to another customer is filed under the new one.
+    if (existing?.customerId && !existing.userId) return existing;
     const known = await directory.identify(identity).catch((error) => {
       log("warn", "directory.identify failed", { error: String(error) });
       return null;
     });
     if (existing) {
-      if (known?.customerId || known?.userId) {
+      if (known && (known.customerId !== existing.customerId || known.userId !== existing.userId)) {
         await store.updateContact(existing.id, {
           customerId: known.customerId ?? existing.customerId,
           userId: known.userId ?? existing.userId,
@@ -199,7 +209,7 @@ export function createSupport(options: SupportOptions) {
       ? ticket
       : null;
 
-  async function findThread(ch: Channel, msg: InboundMessage, contact: Contact): Promise<Ticket | null> {
+  async function findThread(ch: Channel, msg: InboundMessage, contact: Contact, trusted: boolean): Promise<Ticket | null> {
     for (const address of [...msg.to, ...(msg.cc ?? [])]) {
       const token = tokenFromAddress(address.address);
       if (token) {
@@ -207,6 +217,8 @@ export function createSupport(options: SupportOptions) {
         if (ticket) return ticket;
       }
     }
+    // Message-IDs aren't secret: an unauthenticated sender only threads with the token.
+    if (!trusted) return null;
     const ids = [...(msg.references ?? []), msg.inReplyTo].filter((id): id is string => Boolean(id));
     if (ids.length) {
       const ticket = belongsTo(await store.findTicketByRfcMessageIds(ids), contact);
@@ -305,14 +317,16 @@ export function createSupport(options: SupportOptions) {
     if (await store.findMessageByProviderId(ch.id, msg.providerMessageId)) return { result: "duplicate" as const };
 
     const automated = ch.kind === "email" ? automatedReason(msg.headers, msg.from.address) : null;
+    const trusted = msg.source !== "api" && !(ch.kind === "email" && senderFailedAuthentication(msg.headers));
     const identity = normalizeIdentity(ch.identityKind, msg.from.address);
-    const contact = await resolveContact(identity, msg.from.name);
-    if (contact.blockedAt) return { result: "ignored" as const, reason: "blocked" };
+    const contact = await resolveContact(identity, msg.from.name, trusted);
+    // A block never applies to a verified account holder: it may have come from a spoofed message.
+    if (contact.blockedAt && !(trusted && contact.userId)) return { result: "ignored" as const, reason: "blocked" };
 
     const fullText = (msg.text?.trim() ? msg.text : msg.html ? htmlToText(msg.html) : "").trim();
     const text = ch.kind === "email" ? visibleReply(fullText) : fullText;
     const at = msg.receivedAt;
-    const found = await findThread(ch, msg, contact);
+    const found = await findThread(ch, msg, contact, trusted);
 
     let outcome: { ticket: Ticket; message: Message; created: boolean; reopened: boolean };
     try {
@@ -336,7 +350,7 @@ export function createSupport(options: SupportOptions) {
             subject: ch.capabilities.subject ? baseSubject(msg.subject) || null : null,
             status: "open",
             contactId: contact.id,
-            customerId: contact.customerId,
+            customerId: trusted ? contact.customerId : null,
             assigneeId: followUpOf?.assigneeId ?? null,
             replyToken: randomToken(),
             providerThreadId: msg.providerThreadId ?? null,
@@ -391,7 +405,7 @@ export function createSupport(options: SupportOptions) {
             previewAuthorId: null,
             providerThreadId: ticket.providerThreadId ?? msg.providerThreadId ?? null,
             // The sender may have been matched to a customer since the ticket was opened.
-            customerId: ticket.customerId ?? contact.customerId,
+            customerId: ticket.customerId ?? (trusted ? contact.customerId : null),
           });
           if (reopened) {
             await tx.insertEvent({ ticketId: ticket.id, type: "reopened", actorId: null, data: {}, createdAt: at });
@@ -414,7 +428,7 @@ export function createSupport(options: SupportOptions) {
         message,
         contact,
       });
-      if (outcome.created && ch.kind === "email" && msg.source !== "api") await sendAcknowledgement(ch, outcome.ticket, contact, message);
+      if (outcome.created && ch.kind === "email" && trusted) await sendAcknowledgement(ch, outcome.ticket, contact, message);
     }
     return { result: outcome.created ? ("created" as const) : ("appended" as const), ticketId: outcome.ticket.id };
   }
@@ -487,6 +501,8 @@ export function createSupport(options: SupportOptions) {
       replyTo: Message | null;
       headers?: Record<string, string>;
       existing?: Message;
+      /** A new idempotency key, so the provider doesn't replay the earlier attempt's answer. */
+      attemptKey?: string;
     }
   ): Promise<Message> {
     const at = now();
@@ -530,7 +546,7 @@ export function createSupport(options: SupportOptions) {
         }))
       );
       const result = await ch.send({
-        id: message.id,
+        id: input.attemptKey ?? message.id,
         to: input.to,
         fromName: options.fromName ?? null,
         replyTo: isEmail && ch.replyAddress ? { address: addressWithToken(ch.replyAddress, ticket.replyToken) } : null,
@@ -629,6 +645,9 @@ export function createSupport(options: SupportOptions) {
       replyTo: lastInbound,
     });
 
+    // Nothing reached the customer: leave the ticket as it was, with the failed message to retry.
+    if (message.deliveryStatus === "failed") return { message, ticket };
+
     const at = message.createdAt;
     const status: ReplyStatus = input.status ?? "waiting";
     const assigneeId = ticket.assigneeId ?? input.agentId;
@@ -696,6 +715,7 @@ export function createSupport(options: SupportOptions) {
       attachments: message.attachments,
       replyTo,
       existing: message,
+      attemptKey: `${message.id}:${now().getTime()}`,
     });
   }
 
@@ -763,8 +783,12 @@ export function createSupport(options: SupportOptions) {
       data: { from: ticket.status, to: input.status },
     });
     // Spam blocks the sender, so their next messages don't come back; undoing it unblocks them.
+    // Account holders are never blocked: their address may have been spoofed.
     if (input.status === "spam" || ticket.status === "spam") {
-      await store.updateContact(ticket.contactId, { blockedAt: input.status === "spam" ? at : null });
+      const contact = await store.getContact(ticket.contactId);
+      if (contact && !contact.userId) {
+        await store.updateContact(contact.id, { blockedAt: input.status === "spam" ? at : null });
+      }
     }
     return updated;
   }
@@ -816,12 +840,10 @@ export function createSupport(options: SupportOptions) {
       ? (await directory.searchCustomers(query.search.trim()).catch(() => [])).map((c) => c.id)
       : undefined;
     const { items, total } = await store.listTickets({ ...query, searchCustomerIds });
-    const [contacts, customers, agents, reads] = await Promise.all([
-      store.getContacts([...new Set(items.map((t) => t.contactId))]),
-      directory.getCustomers([...new Set(items.map((t) => t.customerId).filter((id): id is string => Boolean(id)))]),
-      agentsById(),
-      store.getReadTimes(items.map((t) => t.id), viewerId),
-    ]);
+    const contacts = await store.getContacts([...new Set(items.map((t) => t.contactId))]);
+    const customers = await directory.getCustomers([...new Set(items.map((t) => t.customerId).filter((id): id is string => Boolean(id)))]);
+    const agents = await agentsById();
+    const reads = await store.getReadTimes(items.map((t) => t.id), viewerId);
     const contactsById = new Map(contacts.map((c) => [c.id, c]));
     const customersById = new Map(customers.map((c) => [c.id, c]));
     const list: TicketListItem[] = items.map((ticket) => {
@@ -840,16 +862,15 @@ export function createSupport(options: SupportOptions) {
 
   async function getTicket(id: string, viewerId: string): Promise<TicketDetail> {
     const ticket = await getTicketOrThrow(id);
-    const [contact, messages, events, agents, customers, previous] = await Promise.all([
-      store.getContact(ticket.contactId),
-      store.listMessages(ticket.id, { includeNotes: true }),
-      store.listEvents(ticket.id),
-      agentsById(),
-      ticket.customerId ? directory.getCustomers([ticket.customerId]) : Promise.resolve([]),
-      ticket.customerId
-        ? store.listTickets({ customerId: ticket.customerId, sort: "recent", limit: 6, offset: 0 })
-        : Promise.resolve({ items: [] as Ticket[], total: 0 }),
-    ]);
+    // In sequence: serverless Postgres clients often allow only a few concurrent queries.
+    const contact = await store.getContact(ticket.contactId);
+    const messages = await store.listMessages(ticket.id, { includeNotes: true });
+    const events = await store.listEvents(ticket.id);
+    const agents = await agentsById();
+    const customers = ticket.customerId ? await directory.getCustomers([ticket.customerId]) : [];
+    const previous = ticket.customerId
+      ? await store.listTickets({ customerId: ticket.customerId, sort: "recent", limit: 6, offset: 0 })
+      : { items: [] as Ticket[], total: 0 };
     await store.markRead(ticket.id, viewerId, now());
     const ch = channel(ticket.channelId);
     const timeline: TimelineEntry[] = [
@@ -873,7 +894,7 @@ export function createSupport(options: SupportOptions) {
     };
   }
 
-  async function attachmentUrl(id: string, access: { ticketId?: string; customerId?: string }) {
+  async function attachmentUrl(id: string, access: { ticketId?: string; customerId?: string; userId?: string | null }) {
     const file = await store.getAttachment(id);
     if (!file) throw new SupportError("not_found", "Attachment not found.");
     const message = file.messageId ? await store.getMessage(file.messageId) : null;
@@ -883,6 +904,9 @@ export function createSupport(options: SupportOptions) {
       const ticket = ticketId ? await store.getTicket(ticketId) : null;
       // Customers only see files on their own tickets, and never files from internal notes.
       if (!ticket || ticket.customerId !== access.customerId || !message || message.kind === "note") {
+        throw new SupportError("not_found", "Attachment not found.");
+      }
+      if (access.userId && (await store.getContact(ticket.contactId))?.userId !== access.userId) {
         throw new SupportError("not_found", "Attachment not found.");
       }
     }
@@ -968,7 +992,10 @@ export function createSupport(options: SupportOptions) {
     }) {
       const channelId = options.portalChannelId;
       const ch = channelId ? channel(channelId) : null;
-      if (!ch) throw new Error("Set portalChannelId to an email channel to accept requests from your app.");
+      if (!ch) {
+        log("error", "portal request refused: set portalChannelId to a configured email channel");
+        throw new SupportError("invalid", "Support requests aren't available right now. Email us instead.");
+      }
       const subject = input.subject.trim();
       const text = input.text.trim();
       if (!subject || !text) throw new SupportError("invalid", "Add a subject and a message.");
