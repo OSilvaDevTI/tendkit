@@ -34,6 +34,8 @@ export interface SupportStore {
   /** The contact's most recently active ticket on a channel, any status. */
   findLatestTicket(channelId: string, contactId: string): Promise<Ticket | null>;
   createTicket(input: NewTicket): Promise<Ticket>;
+  /** Gives the contact's tickets that have no customer yet this customer. */
+  linkContactTickets(contactId: string, customerId: string): Promise<void>;
   updateTicket(id: string, patch: TicketPatch): Promise<Ticket>;
   listTickets(query: TicketQuery): Promise<{ items: Ticket[]; total: number }>;
   countTickets(query: { assigneeId?: string | null }): Promise<TicketCounts>;

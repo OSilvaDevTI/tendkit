@@ -132,6 +132,13 @@ export function createPostgresStore(db: Db): SupportStore {
       return row as Ticket;
     },
 
+    async linkContactTickets(contactId, customerId) {
+      await db
+        .update(supportTickets)
+        .set({ customerId, updatedAt: new Date() })
+        .where(and(eq(supportTickets.contactId, contactId), isNull(supportTickets.customerId)));
+    },
+
     async updateTicket(id, patch) {
       const [row] = await db
         .update(supportTickets)

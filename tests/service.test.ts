@@ -196,6 +196,16 @@ describe("agent tools", () => {
     expect((await t.support.getTicket(next.ticketId, "agent_a")).customer?.id).toBe("cus_sahel");
   });
 
+  it("links a sender's earlier tickets once they're matched to a customer", async () => {
+    const t = await setup({ acknowledgement: undefined });
+    const first = (await t.support.ingest("email", message(t, { from: "moussa@gmail.test" }))) as { ticketId: string };
+    const second = (await t.support.ingest("email", message(t, { from: "moussa@gmail.test", subject: "Another question" }))) as {
+      ticketId: string;
+    };
+    await t.support.linkCustomer({ ticketId: second.ticketId, customerId: "cus_sahel", actorId: "agent_a" });
+    expect((await t.support.getTicket(first.ticketId, "agent_a")).customer?.id).toBe("cus_sahel");
+  });
+
   it("finds tickets by customer name, sender, number and message text", async () => {
     const t = await setup();
     await t.support.ingest("email", message(t));

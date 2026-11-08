@@ -179,6 +179,7 @@ export function createSupport(options: SupportOptions) {
           name: existing.name ?? known.name ?? name ?? null,
           locale: existing.locale ?? known.locale ?? null,
         });
+        if (known.customerId) await store.linkContactTickets(existing.id, known.customerId);
         return (await store.getContact(existing.id))!;
       }
       return existing;
@@ -389,6 +390,8 @@ export function createSupport(options: SupportOptions) {
             previewKind: "inbound",
             previewAuthorId: null,
             providerThreadId: ticket.providerThreadId ?? msg.providerThreadId ?? null,
+            // The sender may have been matched to a customer since the ticket was opened.
+            customerId: ticket.customerId ?? contact.customerId,
           });
           if (reopened) {
             await tx.insertEvent({ ticketId: ticket.id, type: "reopened", actorId: null, data: {}, createdAt: at });
@@ -767,6 +770,7 @@ export function createSupport(options: SupportOptions) {
     const updated = await store.updateTicket(ticket.id, { customerId: input.customerId });
     // Link the person too, so their next emails land on this customer by themselves.
     await store.updateContact(ticket.contactId, { customerId: input.customerId });
+    if (input.customerId) await store.linkContactTickets(ticket.contactId, input.customerId);
     await store.insertEvent({
       ticketId: ticket.id,
       type: "customer_linked",
