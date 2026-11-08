@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, exists, inArray, isNull, like, lt, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, exists, inArray, isNull, lt, ne, or, sql, type SQL } from "drizzle-orm";
 import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
 import type { SupportStore, TicketCounts } from "../store";
 import type { Attachment, Contact, Identity, Message, Ticket, TicketEvent } from "../types";
