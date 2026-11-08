@@ -181,12 +181,27 @@ function Timeline({ detail, agents }: { detail: TicketDetail; agents: Agent[] })
   const agentName = (id: string | null) =>
     !id ? null : id === viewerId ? t("inbox.you") : agents.find((a) => a.id === id)?.name ?? t("ticket.formerAgent");
 
+  // A reply already says who took the ticket and that it now waits on the customer; don't repeat it.
+  const replies = detail.timeline.flatMap((e) =>
+    e.type === "message" && e.message.kind === "outbound" && e.message.authorId ? [e.message] : []
+  );
+  const impliedByReply = (event: TimelineEvent) => {
+    const selfAssigned = event.type === "assigned" && event.data.to === event.actorId;
+    const nowWaiting = event.type === "status_changed" && event.data.to === "waiting";
+    return (
+      (selfAssigned || nowWaiting) &&
+      replies.some(
+        (m) => m.authorId === event.actorId && Math.abs(new Date(m.createdAt).getTime() - new Date(event.createdAt).getTime()) < 10_000
+      )
+    );
+  };
+
   return (
     <ol className="space-y-3">
-      {detail.timeline.map((entry) =>
+      {detail.timeline.filter((entry) => entry.type === "message" || !impliedByReply(entry.event)).map((entry) =>
         entry.type === "message" ? (
           <li key={entry.message.id}>
-            <MessageCard message={entry.message} detail={detail} agentName={agentName} />
+            <MessageCard message={entry.message} detail={detail} agents={agents} agentName={agentName} />
           </li>
         ) : (
           <li key={entry.event.id} className="px-2 py-1 text-center text-xs text-muted-foreground">
@@ -223,10 +238,12 @@ function describeEvent(event: TimelineEvent, t: ReturnType<typeof useSupport>["t
 function MessageCard({
   message,
   detail,
+  agents,
   agentName,
 }: {
   message: TimelineMessage;
   detail: TicketDetail;
+  agents: Agent[];
   agentName: (id: string | null) => string | null;
 }) {
   const { client, t, locale } = useSupport();
@@ -241,7 +258,14 @@ function MessageCard({
     message.kind === "inbound"
       ? message.from?.name || message.from?.address || contactLabel(detail.contact)
       : agentName(message.authorId) ?? message.from?.name ?? t("ticket.formerAgent");
-  const hasMore = message.kind === "inbound" && (message.html || (message.fullText && message.fullText.trim() !== message.text.trim()));
+  // Initials come from the real name even when the label says "You".
+  const avatarName =
+    message.kind === "inbound" ? author : agents.find((a) => a.id === message.authorId)?.name ?? author;
+  // Only offer the full message when it shows something more: quoted history, or layout and images.
+  const hasMore =
+    message.kind === "inbound" &&
+    ((message.fullText !== null && message.fullText.trim() !== message.text.trim()) ||
+      (message.html !== null && /<(table|img)\b/i.test(message.html)));
   const failed = message.deliveryStatus === "failed";
 
   return (
@@ -255,7 +279,7 @@ function MessageCard({
       )}
     >
       <header className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-        <AgentAvatar name={author} className={message.kind === "inbound" ? "bg-muted text-foreground/70" : undefined} />
+        <AgentAvatar name={avatarName} className={message.kind === "inbound" ? "bg-muted text-foreground/70" : undefined} />
         <bdi className="text-sm font-medium text-foreground">{author}</bdi>
         {message.kind === "note" && <span className="font-medium text-amber-700 dark:text-amber-300">{t("ticket.note")}</span>}
         {message.kind === "inbound" && message.from && message.from.name && <bdi dir="ltr">{message.from.address}</bdi>}

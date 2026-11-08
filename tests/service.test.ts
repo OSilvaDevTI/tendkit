@@ -295,7 +295,7 @@ describe("customer portal", () => {
     const detail = await t.support.portal.get({ ticketId: mine.id, customerId: "cus_nour", readerId: "usr_mariem" });
     expect(detail.messages.map((m) => [m.kind, m.author, m.text])).toEqual([
       ["inbound", "Mariem", "Can you enable Masrivi?"],
-      ["outbound", "Khadija", "Done, it's live.\n\nKhadija"],
+      ["outbound", "Khadija", "Done, it's live."],
     ]);
     await expect(t.support.portal.get({ ticketId: mine.id, customerId: "cus_sahel", readerId: "usr_ahmed" })).rejects.toThrow(
       "Request not found"

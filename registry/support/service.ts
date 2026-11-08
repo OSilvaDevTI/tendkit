@@ -476,7 +476,10 @@ export function createSupport(options: SupportOptions) {
     ch: Channel,
     ticket: Ticket,
     input: {
+      /** What is sent, signature included. */
       text: string;
+      /** What screens show; defaults to `text`. */
+      displayText?: string;
       to: Address[];
       auto: boolean;
       authorId: string | null;
@@ -502,7 +505,7 @@ export function createSupport(options: SupportOptions) {
         to: input.to,
         cc: [],
         subject: isEmail ? replySubject(ticket.subject) : null,
-        text: input.text,
+        text: input.displayText ?? input.text,
         fullText: input.text,
         html: null,
         rfcMessageId: null,
@@ -618,6 +621,7 @@ export function createSupport(options: SupportOptions) {
 
     const message = await sendOutbound(ch, ticket, {
       text: body,
+      displayText: text,
       to: [to],
       auto: false,
       authorId: input.agentId,
@@ -685,7 +689,7 @@ export function createSupport(options: SupportOptions) {
     const messages = await store.listMessages(ticket.id, { includeNotes: false });
     const replyTo = messages.find((m) => m.rfcMessageId && m.rfcMessageId === message.inReplyTo) ?? null;
     return sendOutbound(ch, ticket, {
-      text: message.text,
+      text: message.fullText ?? message.text,
       to: message.to,
       auto: message.auto,
       authorId: message.authorId,
