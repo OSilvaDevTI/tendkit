@@ -60,7 +60,7 @@ Tendkit targets Next.js (App Router), Tailwind 4, shadcn/ui, TanStack Query and 
    - **Scheduled job:** call `support.runScheduled()` every few minutes. It polls mailboxes and renews subscriptions.
    - **API:** expose the agent and portal methods through your own API layer, behind your own auth. Pass them to `<SupportProvider>` / `<SupportPortalProvider>` as a client.
 
-Moosyl's integration is a complete example: an oRPC router, Supabase Storage, super admins as agents, and organizations as customers.
+Tendkit runs in production at [Moosyl](https://moosyl.com) (Postgres on Supabase, Next.js on Workers) and [Moorsyl](https://moorsyl.com) (Cloudflare D1, R2 and Hono). In both, customers are organizations, agents are the team's admins, and an oRPC router exposes the service.
 
 ## Upgrading
 
@@ -76,9 +76,13 @@ Keep your own changes out of the engine files (`service.ts`, `text.ts`, `channel
 ```bash
 pnpm install
 pnpm typecheck   # browser and server (no DOM) builds
-pnpm test        # core against a real Postgres (PGlite), adapters against recorded provider payloads
+pnpm test        # core on Postgres (PGlite) and SQLite/D1, adapters against recorded provider payloads
 pnpm registry:build
 ```
+
+## Contributing
+
+Adapters, translations and email-trimming fixes are the easiest way in. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licence
 

@@ -112,7 +112,7 @@ describe("replies and threading", () => {
     expect(sentMessage.deliveryStatus).toBe("sent");
     const out = t.email.sent[0]!;
     expect(out.subject).toBe("Re: Payout not received");
-    expect(out.text).toBe("It was sent on Oct 14.\n\nAbderrahmane");
+    expect(out.text).toBe("It was sent on Oct 14.\n\nAhmed");
     expect(out.inReplyTo).toMatch(/^<in-\d+@mail\.test>$/);
     expect(tokenFromAddress(out.replyTo!.address)).toBe(ticket.replyToken);
 

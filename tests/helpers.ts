@@ -136,7 +136,7 @@ export async function setup(options: Partial<SupportOptions> = {}, channels?: Ch
       },
       async listAgents() {
         return [
-          { id: "agent_a", name: "Abderrahmane Ould Sidi" },
+          { id: "agent_a", name: "Ahmed Salem" },
           { id: "agent_k", name: "Khadija" },
         ];
       },
