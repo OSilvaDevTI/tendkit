@@ -7,7 +7,16 @@ import {
   type OutboundAttachment,
 } from "./channel";
 import { addressWithToken, baseSubject, normalizeIdentity, replySubject, tokenFromAddress } from "./address";
-import { automatedReason, senderFailedAuthentication, htmlToText, snippet, textToHtml, visibleReply } from "./text";
+import {
+  automatedReason,
+  senderFailedAuthentication,
+  htmlToText,
+  signatureFromHtml,
+  snippet,
+  textToHtml,
+  visibleReply,
+  withoutSignature,
+} from "./text";
 import type { SupportStore, TicketQuery } from "./store";
 import type {
   Address,
@@ -292,7 +301,7 @@ export function createSupport(options: SupportOptions) {
       to: msg.to,
       cc: msg.cc ?? [],
       subject: msg.subject ?? null,
-      text: visibleReply(text),
+      text: withoutSignature(visibleReply(text), signatureFromHtml(msg.html)),
       fullText: text,
       html: msg.html ?? null,
       rfcMessageId: msg.rfcMessageId ?? null,
@@ -330,7 +339,7 @@ export function createSupport(options: SupportOptions) {
     if (contact.blockedAt && !(trusted && contact.userId)) return { result: "ignored" as const, reason: "blocked" };
 
     const fullText = (msg.text?.trim() ? msg.text : msg.html ? htmlToText(msg.html) : "").trim();
-    const text = ch.kind === "email" ? visibleReply(fullText) : fullText;
+    const text = ch.kind === "email" ? withoutSignature(visibleReply(fullText), signatureFromHtml(msg.html)) : fullText;
     const at = msg.receivedAt;
     const found = await findThread(ch, msg, contact, trusted);
 

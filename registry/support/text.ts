@@ -51,12 +51,68 @@ export function visibleReply(text: string): string {
       break;
     }
   }
+  // The rule Outlook draws above its "From:" block ("________") belongs to the quote.
+  if (end < lines.length) {
+    while (end > 0 && /^\s*(?:[_\-=–—]\s*){5,}$|^\s*$/.test(lines[end - 1]!)) end--;
+  }
   const kept = lines
     .slice(0, end)
     .filter((line) => !SIGNATURE_LINES.some((re) => re.test(line)))
     .join("\n")
     .trim();
   return kept || text.trim();
+}
+
+/** Where mail clients put the quoted message in HTML; a signature after this belongs to the quote. */
+const HTML_QUOTE_START = /<blockquote|<div[^>]+(?:gmail_quote|yahoo_quoted|divRplyFwdMsg|appendonsend|moz-cite-prefix|protonmail_quote)/i;
+
+/** Elements mail clients wrap the sender's signature in. */
+const HTML_SIGNATURE =
+  /<(div|table|p|span)\b[^>]*(?:\bid\s*=\s*["']?(?:Signature|ms-outlook-mobile-signature)\b|\bclass\s*=\s*["'][^"']*\b(?:gmail_signature|moz-signature)\b)[^>]*>/i;
+
+/**
+ * The sender's signature as plain text, when their mail client marked it in the HTML (Outlook,
+ * Gmail, Thunderbird). Use it with `withoutSignature` to show only what they wrote.
+ */
+export function signatureFromHtml(html: string | null | undefined): string | null {
+  if (!html) return null;
+  const quote = html.search(HTML_QUOTE_START);
+  const own = quote === -1 ? html : html.slice(0, quote);
+  const open = HTML_SIGNATURE.exec(own);
+  if (!open) return null;
+  const tag = open[1]!.toLowerCase();
+  // Walk to the matching close tag so nested elements of the same kind stay inside.
+  const tags = new RegExp(`<(/?)${tag}\\b[^>]*>`, "gi");
+  tags.lastIndex = open.index + open[0].length;
+  let depth = 1;
+  let close = own.length;
+  for (let m = tags.exec(own); m; m = tags.exec(own)) {
+    depth += m[1] ? -1 : 1;
+    if (depth === 0) {
+      close = m.index;
+      break;
+    }
+  }
+  const text = htmlToText(own.slice(open.index + open[0].length, close))
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .join("\n");
+  return text || null;
+}
+
+/** Removes `signature` from the end of `text`, comparing line by line and ignoring spacing. */
+export function withoutSignature(text: string, signature: string | null | undefined): string {
+  if (!signature) return text;
+  const norm = (l: string) => l.replace(/\s+/g, " ").trim();
+  const sig = signature.split("\n").map(norm).filter(Boolean);
+  const lines = text.split("\n");
+  // Indexes of non-empty lines, so blank lines between signature lines don't matter.
+  const filled = lines.flatMap((l, i) => (norm(l) ? [i] : []));
+  if (!sig.length || filled.length <= sig.length) return text;
+  const tail = filled.slice(-sig.length);
+  if (!tail.every((i, k) => norm(lines[i]!) === sig[k])) return text;
+  return lines.slice(0, tail[0]).join("\n").trim();
 }
 
 function isHeaderBlock(lines: string[], i: number): boolean {

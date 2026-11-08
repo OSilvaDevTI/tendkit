@@ -82,6 +82,20 @@ describe("inbound email", () => {
     const first = detail.timeline.find((e) => e.type === "message")!;
     expect(first.type === "message" && first.message.text).toBe("Thanks, it arrived.");
   });
+  it("leaves out the signature the sender's mail client marked", async () => {
+    const t = await setup();
+    const { ticketId } = (await t.support.ingest(
+      "email",
+      message(t, {
+        text: "Is the payout sent?\n\nMariem Sidi\nBoutique Nour",
+        html: '<div>Is the payout sent?</div><div id="Signature"><p>Mariem Sidi</p><p>Boutique Nour</p></div>',
+      })
+    )) as { ticketId: string };
+    const detail = await t.support.getTicket(ticketId, "agent_a");
+    const first = detail.timeline.find((e) => e.type === "message")!;
+    expect(first.type === "message" && first.message.text).toBe("Is the payout sent?");
+    expect(first.type === "message" && first.message.fullText).toContain("Boutique Nour");
+  });
 });
 
 describe("replies and threading", () => {
