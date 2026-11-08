@@ -1,5 +1,18 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "lib": ["ES2023"], "types": ["node"], "jsx": "preserve" },
-  "include": ["registry/support"]
+  "compilerOptions": {
+    "lib": [
+      "ES2023"
+    ],
+    "types": [
+      "node"
+    ],
+    "jsx": "preserve",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "incremental": false
+  },
+  "include": [
+    "registry/support"
+  ]
 }

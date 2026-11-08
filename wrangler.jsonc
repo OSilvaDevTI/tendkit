@@ -1,0 +1,13 @@
+{
+  // The Tendkit site: landing page, docs, demo and the shadcn registry (public/r), as static files.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tendkit-site",
+  "account_id": "1a41481d63703bac487e4b2e74df7036",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  },
+  "routes": [{ "pattern": "tendkit.softwaresavants.dev", "custom_domain": true }]
+}

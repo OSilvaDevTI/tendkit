@@ -1,0 +1,28 @@
+# Tendkit
+
+> Customer support you own: a shared inbox, tickets and a customer portal that you copy into your own app with the shadcn CLI. Customer emails, WhatsApp and SMS become tickets your team answers next to the customer's account. MIT licensed.
+
+Tendkit targets Next.js (App Router), Tailwind 4, shadcn/ui, TanStack Query and Drizzle (Postgres, or SQLite/Cloudflare D1). Channel adapters use only fetch and WebCrypto, so they run on Cloudflare Workers, Node, Bun and Deno.
+
+## Install
+
+`npx shadcn@latest add https://tendkit.softwaresavants.dev/r/support.json https://tendkit.softwaresavants.dev/r/support-postgres.json https://tendkit.softwaresavants.dev/r/support-ui.json https://tendkit.softwaresavants.dev/r/channel-resend.json`
+
+Registry items: support (core), support-postgres, support-d1, support-ui, channel-resend, channel-microsoft365, channel-gmail, channel-smtp, channel-twilio, channel-whatsapp, channel-telegram, channel-api. Each is at https://tendkit.softwaresavants.dev/r/<item>.json.
+
+## How to integrate (for coding agents)
+
+1. Install the items above with the shadcn CLI (server items into the API package, support-ui into the web app in a monorepo).
+2. Export the support schema from the Drizzle schema and generate a migration. Don't apply migrations without asking.
+3. Create the service with createSupport({ store, storage, channels, directory, notify, acknowledgement, fromName, portalChannelId, ignoreFrom }).
+4. Implement the SupportDirectory: identify (sender to user and customer/account), searchCustomers, getCustomers, listAgents. This is the only product-specific part.
+5. Route POST /api/webhooks/support/[channel] to support().handleWebhook(channel, request). Call support().runScheduled() from a cron every few minutes.
+6. Expose the agent methods (listTickets, getTicket, reply, addNote, assign, setStatus, linkCustomer, uploadAttachment, attachmentUrl, counts, listAgents, searchCustomers) and support().portal through the app's own API behind its own auth; implement SupportClient with them and render SupportInbox/SupportTicket inside SupportProvider.
+7. For email: use a receiving subdomain (e.g. in.acme.com) for the reply address, keep the main mailbox where it is, and copy mail to the receiving address. The Resend adapter needs a Full access API key to read received mail.
+
+## Docs
+
+- [Get started](https://tendkit.softwaresavants.dev/docs): install, schema, service, directory, webhooks, screens
+- [Channels](https://tendkit.softwaresavants.dev/docs/channels): every adapter and its options
+- [Live demo](https://tendkit.softwaresavants.dev/demo)
+- [Source](https://github.com/SoftwareSavants/tendkit)

@@ -1,5 +1,7 @@
 # Tendkit
 
+**[Live demo](https://tendkit.softwaresavants.dev/demo) · [Docs](https://tendkit.softwaresavants.dev/docs)**
+
 Customer support you own. Tendkit is a shared inbox, tickets and a customer portal that you copy into your own app, shadcn-style. There's no hosted service and no package to keep upgrading. The code lives in your repo, reads your own database, and looks like the rest of your product because it uses your components.
 
 - **Native.** The ticket screen shows your customer's account (their orders, payments, plan) from your own database, next to the conversation.
@@ -25,7 +27,7 @@ Tendkit targets Next.js (App Router), Tailwind 4, shadcn/ui, TanStack Query and 
 1. Add the registry to `components.json`:
 
    ```json
-   { "registries": { "@tendkit": "https://raw.githubusercontent.com/SoftwareSavants/tendkit/main/public/r/{name}.json" } }
+   { "registries": { "@tendkit": "https://tendkit.softwaresavants.dev/r/{name}.json" } }
    ```
 
 2. Add the pieces you need:

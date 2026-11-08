@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "incremental": false
+  },
+  "include": [
+    "registry",
+    "tests",
+    "site",
+    "app",
+    "components",
+    "lib",
+    "next-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "out",
+    ".next"
+  ]
+}

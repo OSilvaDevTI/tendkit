@@ -1,2 +1,7 @@
 node_modules
 .DS_Store
+.next
+out
+next-env.d.ts
+.wrangler
+tsconfig.tsbuildinfo
