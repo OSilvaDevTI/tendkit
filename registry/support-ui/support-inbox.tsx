@@ -50,6 +50,14 @@ export function SupportInbox() {
 
   const counts = useQuery({ queryKey: ["support", "counts"], queryFn: () => client.counts(), refetchInterval: 30_000 });
   const agents = useQuery({ queryKey: ["support", "agents"], queryFn: () => client.listAgents(), staleTime: 5 * 60_000 });
+  const assigneeLabel =
+    assignee === "any"
+      ? t("inbox.anyone")
+      : assignee === "me"
+        ? t("inbox.me")
+        : assignee === "none"
+          ? t("inbox.unassigned")
+          : (agents.data?.find((a) => a.id === assignee)?.name ?? t("inbox.anyone"));
   const list = useQuery({
     queryKey: ["support", "tickets", { status, assignee, page, search }],
     queryFn: () =>
@@ -101,9 +109,10 @@ export function SupportInbox() {
               aria-label={t("inbox.search")}
             />
           </div>
-          <Select value={assignee} onValueChange={(value) => setParams({ assignee: value === "any" ? null : value })}>
+          {/* Works with Radix and Base UI selects: the label is rendered here, and an empty value means "anyone". */}
+          <Select value={assignee} onValueChange={(value) => setParams({ assignee: !value || value === "any" ? null : String(value) })}>
             <SelectTrigger className="h-9 w-44" aria-label={t("inbox.assignee")}>
-              <SelectValue />
+              <SelectValue>{assigneeLabel}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="any">{t("inbox.anyone")}</SelectItem>

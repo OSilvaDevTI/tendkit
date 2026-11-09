@@ -63,6 +63,11 @@ export default function Installation() {
         </Step>
       </Steps>
 
+      <Callout title="Radix or Base UI">
+        The screens work with both flavors of shadcn/ui: projects created with Radix (<code>radix-nova</code> and the
+        classic styles) and with Base UI (<code>base-nova</code>, the current default). They only use APIs the two share.
+      </Callout>
+
       <H2 id="monorepos">Monorepos</H2>
       <p>
         Install server items where your API lives and the screens where your web app lives, then fix the few imports that

@@ -105,19 +105,28 @@ function TicketControls({ detail, agents }: { detail: TicketDetail; agents: Agen
   const setStatus = useTicketMutation(id, (status: TicketStatus) => client.setStatus({ ticketId: id, status }));
   const assign = useTicketMutation(id, (assigneeId: string | null) => client.assign({ ticketId: id, assigneeId }));
   const [linking, setLinking] = useState(false);
+  // Controlled, so picking an option closes the menu with Radix and Base UI alike.
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
   const assigneeName = detail.assignee ? (detail.assignee.id === viewerId ? t("inbox.you") : detail.assignee.name) : t("inbox.unassigned");
   const trigger = buttonVariants({ variant: "outline", size: "sm" });
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       {detail.ticket.status !== "spam" && (
-        <DropdownMenu>
+        <DropdownMenu open={statusOpen} onOpenChange={setStatusOpen}>
           <DropdownMenuTrigger className={trigger} disabled={setStatus.isPending}>
             <span className="text-muted-foreground">{t("ticket.statusLabel")}</span>
             <span>{t(`status.${detail.ticket.status}`)}</span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuRadioGroup value={detail.ticket.status} onValueChange={(v) => setStatus.mutate(v as TicketStatus)}>
+          <DropdownMenuContent align="end" className="w-auto min-w-44">
+            <DropdownMenuRadioGroup
+              value={detail.ticket.status}
+              onValueChange={(v) => {
+                setStatusOpen(false);
+                setStatus.mutate(v as TicketStatus);
+              }}
+            >
               {(["open", "waiting", "solved"] as const).map((status) => (
                 <DropdownMenuRadioItem key={status} value={status}>
                   {t(`status.${status}`)}
@@ -128,13 +137,19 @@ function TicketControls({ detail, agents }: { detail: TicketDetail; agents: Agen
         </DropdownMenu>
       )}
 
-      <DropdownMenu>
+      <DropdownMenu open={assignOpen} onOpenChange={setAssignOpen}>
         <DropdownMenuTrigger className={trigger} disabled={assign.isPending}>
           <span className="text-muted-foreground">{t("ticket.assigneeLabel")}</span>
           <span>{assigneeName}</span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
-          <DropdownMenuRadioGroup value={detail.ticket.assigneeId ?? ""} onValueChange={(v) => assign.mutate(v || null)}>
+        <DropdownMenuContent align="end" className="max-h-80 w-auto min-w-44 overflow-y-auto">
+          <DropdownMenuRadioGroup
+            value={detail.ticket.assigneeId ?? ""}
+            onValueChange={(v) => {
+              setAssignOpen(false);
+              assign.mutate(v || null);
+            }}
+          >
             <DropdownMenuRadioItem value={viewerId}>{t("ticket.assignToMe")}</DropdownMenuRadioItem>
             {agents
               .filter((a) => a.id !== viewerId)
@@ -153,18 +168,18 @@ function TicketControls({ detail, agents }: { detail: TicketDetail; agents: Agen
         <DropdownMenuTrigger className={buttonVariants({ variant: "outline", size: "icon" }) + " size-8"} aria-label={t("ticket.more")}>
           <MoreHorizontal className="size-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => setLinking(true)}>
+        <DropdownMenuContent align="end" className="w-auto min-w-44">
+          <DropdownMenuItem onClick={() => setLinking(true)}>
             <Link2 className="size-4" />
             {detail.customer ? t("ticket.changeCustomer") : t("ticket.linkCustomer")}
           </DropdownMenuItem>
           {detail.ticket.status === "spam" ? (
-            <DropdownMenuItem onSelect={() => setStatus.mutate("open")}>
+            <DropdownMenuItem onClick={() => setStatus.mutate("open")}>
               <RotateCw className="size-4" />
               {t("ticket.notSpam")}
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setStatus.mutate("spam")}>
+            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setStatus.mutate("spam")}>
               <Ban className="size-4" />
               {t("ticket.markSpam")}
             </DropdownMenuItem>
